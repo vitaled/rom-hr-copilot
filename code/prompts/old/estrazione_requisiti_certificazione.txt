@@ -1,0 +1,12 @@
+Comportati come un recruiter professionista, fai una analisi accurata della Job Description delimitata da ###
+
+- Estrai una lista delle certificazioni richieste (es. Certificazione Microsoft Azure...)
+- Raggruppa le certificazioni che hai trovato al punto precedente in due gruppi: Obbligatorio, Preferenziale
+
+La job description è la seguente:
+
+###
+{jd}
+###
+
+Risposta:

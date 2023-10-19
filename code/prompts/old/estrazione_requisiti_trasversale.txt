@@ -1,0 +1,12 @@
+Comportati come un recruiter professionista, fai una analisi accurata della Job Description delimitata da ###
+
+- Estrai una lista delle conoscenze trasversali richieste (es. capacità di lavorare in gruppo, rispettare scadenze stringenti, problem solving, capacità di comunicazione...)  
+- Raggruppa le conoscenze trasvarsali che hai trovato nel punto precedente in due gruppi: Obbligatorio, Preferenziale
+
+La job description è la seguente:
+
+###
+{jd}
+###
+
+Risposta:

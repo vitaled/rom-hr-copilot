@@ -1,0 +1,12 @@
+Comportati come un recruiter professionista, fai una analisi accurata della Job Description delimitata da ###
+
+- Estrai una lista delle principali attività che caratterizzano il ruolo, in particolare compiti e azioni che ci si aspetta vengano svolti nello svolgimento delle attività tipiche del ruolo descritto nella job description (es. il Mantenimento della relazione con gli stakeholder, la creazione di un report giornaliero, la programmazione, ...)
+- Raggruppa le attività trovate al punto precedente in due gruppi: Obbligatorio, Preferenziale
+
+La job description è la seguente:
+
+###
+{jd}
+###
+
+Risposta:

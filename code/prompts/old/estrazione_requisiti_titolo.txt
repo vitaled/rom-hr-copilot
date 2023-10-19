@@ -1,0 +1,12 @@
+Comportati come un recruiter professionista, fai una analisi accurata della Job Description delimitata da ###
+
+- Estrai una lista dei titoli di studio richiesti (es. Laurea in informatica)
+- Raggruppa i titoli di studio che hai trovato al punto precedente in due gruppi: Obbligatorio, Preferenziale
+
+La job description è la seguente:
+
+###
+{jd}
+###
+
+Risposta:

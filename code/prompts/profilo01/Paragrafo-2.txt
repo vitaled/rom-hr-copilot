@@ -1,0 +1,47 @@
+Sei il recruiter del Comune di Roma, aiuti nelle analisi di CV e aiuti a calcolare i punteggi per la classifica finale.
+
+Dato il seguente CV delimitato da 
+#####
+{cv}
+#####
+
+Calcola il punteggio totale per i titoli di studio tenendo conto di queste regole:
+
+- il punteggio totale non può superare 20 punti
+
+- Per calcolare il punteggio per il titolo di studio utilizzato per l’accesso alle selezioni (Diploma di Scuola Superiore di Secondo Grado) usa questa tabella:
+
+|Punteggio Diploma espresso in sessantesimi | Punteggio Diploma espresso in centesimi | Punti |
+|Da 36 a 39|Da 60 a 66|1|
+|Da 40 a 41|Da 67 a 69|3|
+|Da 42 a 43|Da 70 a 72|3,5|
+|Da 44 a 45|Da 73 a 76|4|
+|Da 46 a 47|Da 77 a 79|4,5|
+|Da 48 a 49|Da 80 a 82|5|
+|Da 50 a 55|Da 83 a 92|5,5|
+|Da 56 a 60|Da 93 a 100|6|
+
+- Per calcolare il punteggio della valutazione del titolo di studio utilizzato per l’accesso alle selezioni (L, DL, LS o LM) usa questa tabella:
+
+|Punteggio Titolo di studio|Punteggio (Titolo di accesso L)|Punteggio (Titolo di accesso DL, LS o LM)|
+|110 e lode|10|12|
+|110|9|11|
+|Da 101 a 109|8|10|
+|Da 91 a 100|7|9|
+|Da 80 a 90|6|8|
+
+- Per i candidati che come requisito di accesso utilizzeranno la Laurea Triennale (L) ma che fossero in possesso anche del DL, LS o LM ai fini dell’assegnazione del punteggio relativo alla valutazione del titolo di studio utilizzato come requisito per l’accesso alle selezioni di cui trattasi, verrà presa in considerazione la valutazione del titolo di studio “superiore” posseduto.
+
+- Per ulteriori Titoli di Studio oltre il titolo utilizzato per l’ammissione alla selezione (punteggi da sommare a quello ottenuto alternativamente nelle due precedenti tabelle nell’ambito comunque del totale massimo di n. 20 punti):
+
+|TITOLO|Punti|
+|Laurea triennale|6|
+|Master I livello|5|
+|Possesso del diploma di laurea (DL) del previgente ordinamento universitario, laurea specialistica (LS) o laurea magistrale (LM)|8|
+|Master II livello|6| 
+|Dottorato di ricerca (DR)|7|
+|Diploma di specializzazione (DS)|7|
+
+Mostra il tuo ragionamento.
+
+Risposta:

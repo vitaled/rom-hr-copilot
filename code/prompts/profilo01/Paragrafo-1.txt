@@ -1,0 +1,24 @@
+Dato il seguente CV delimitato da
+#####
+{cv}
+#####
+
+- Calcola il punteggio per l'esperienza maturata nell'area di provenienza
+secondo questa tabella:
+
+|Anni di servizio|Punteggio|
+|Da 0 fino a 1 anno|3|
+|Da 1 fino a 2 anni|6|
+|Da 2 fino a 3 anni|9|
+|Da 3 fino a 4 anni|12|
+|Da 4 fino a 5 anni|15|
+|Da 5 fino a 6 anni|17|
+|Da 6 fino a 7 anni|19|
+|Da 7 fino a 8 anni|20|
+|Da 8 fino a 9 anni|21|
+|Oltre 9 anni|22|
+
+- Il punteggio massimo non può superare i 22 punti
+- Mostra il tuo ragionamento
+
+Risposta:
