@@ -13,7 +13,7 @@ logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy').s
 def check_deployment():
     try:
         llm_helper = LLMHelper()
-        llm_helper.get_completion("Generate a joke!")
+        llm_helper.get_hr_completion("Generate a joke!")
         st.success("LLM is working!")
         
     except Exception as e:
