@@ -1,0 +1,21 @@
+{
+  "profile_name": "Profilo n. 1",
+  "prompts": [
+    {
+      "prompt_description": "Paragrafo 1: Area di Provenienza",
+      "prompt_text": "Paragrafo-1.txt"
+    },
+    {
+      "prompt_description": "Paragrafo 2: Titolo di Studio",
+      "prompt_text": "Paragrafo-2.txt"
+    },
+    {
+      "description": "Paragrafo 3.1: Competenze Professionali (1/2)",
+      "prompt_text": "Paragrafo-3.1.txt"
+    },
+    {
+      "description": "Paragrafo 3.2: Competenze Professionali (2/2)",
+      "prompt_text": "Paragrafo-3.2.txt"
+    }
+  ]
+}

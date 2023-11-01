@@ -13,6 +13,9 @@
       },
       "principalId": {
         "value": "${AZURE_PRINCIPAL_ID}"
+      },
+      "storageSkuName": {
+        "value": "${AZURE_STORAGE_SKU=Standard_LRS}"
       }
       
     }

@@ -4,5 +4,5 @@ COPY ./requirements.txt /usr/local/src/myscripts/requirements.txt
 WORKDIR /usr/local/src/myscripts
 RUN pip install -r requirements.txt
 COPY . /usr/local/src/myscripts
-EXPOSE 80
-CMD ["streamlit", "run", "Home.py", "--server.port", "80", "--server.enableXsrfProtection", "false"]
+EXPOSE 8080
+CMD ["streamlit", "run", "Home.py", "--server.port", "8080", "--server.enableXsrfProtection", "false"]

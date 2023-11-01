@@ -36,6 +36,12 @@ param chatGptModelVersion string = '0613'
 // param embeddingDeploymentCapacity int = 30
 // param embeddingModelName string = 'text-embedding-ada-002'
 
+//Storage account
+param storageResourceGroupName string = ''
+param storageAccountName string = ''
+param storageSkuName string
+param storageResourceGroupLocation string = location
+
 //Form Recognizer
 
 param formRecognizerServiceName string = ''
@@ -71,6 +77,10 @@ resource formRecognizerResourceGroup 'Microsoft.Resources/resourceGroups@2021-04
 
 resource openAiResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(openAiResourceGroupName)) {
   name: !empty(openAiResourceGroupName) ? openAiResourceGroupName : rg.name
+}
+
+resource storageResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(storageResourceGroupName)) {
+  name: !empty(storageResourceGroupName) ? storageResourceGroupName : rg.name
 }
 
 module monitoring './shared/monitoring.bicep' = {
@@ -141,6 +151,7 @@ module code './app/code.bicep' = {
     openAIBase: 'https://${abbrs.cognitiveServicesAccounts}${resourceToken}.openai.azure.com/'
     openAIEngine: 'gpt-4'
     formRecognizerEndpoint: 'https://${abbrs.cognitiveServicesFormRecognizer}${resourceToken}.cognitiveservices.azure.com/'
+    storageAccountName: '${abbrs.storageStorageAccounts}${resourceToken}'
     exists: codeExists
   }
   scope: rg
@@ -187,6 +198,36 @@ module openAi 'core/ai/cognitiveservices.bicep' = if (openAiHost == 'azure') {
   }
 }
 
+module storage 'storage/storage-account.bicep' = {
+  name: 'storage'
+  scope: storageResourceGroup
+  params: {
+    name: !empty(storageAccountName) ? storageAccountName : '${abbrs.storageStorageAccounts}${resourceToken}'
+    location: storageResourceGroupLocation
+    tags: tags
+    publicNetworkAccess: 'Enabled'
+    sku: {
+      name: storageSkuName
+    }
+    deleteRetentionPolicy: {
+      enabled: true
+      days: 2
+    }
+    containers: [
+      {
+        name: 'processed'
+        publicAccess: 'None'
+      }
+      {
+        name: 'resumes'
+        publicAccess: 'None'
+      }
+    ]
+  }
+}
+
+
+
 // // USER ROLES
 // module openAiRoleUser 'core/security/role.bicep' = if (openAiHost == 'azure') {
 //   scope: openAiResourceGroup
@@ -225,6 +266,26 @@ module formRecognizerRoleUser 'core/security/role.bicep' = {
   params: {
     principalId: code.outputs.identityPrincipalId
     roleDefinitionId: 'a97b65f3-24c7-4388-baec-2e87135dc908'
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module storageRoleUser 'core/security/role.bicep' = {
+  scope: storageResourceGroup
+  name: 'storage-role-user'
+  params: {
+    principalId: code.outputs.identityPrincipalId
+    roleDefinitionId: '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module storageContribRoleUser 'core/security/role.bicep' = {
+  scope: storageResourceGroup
+  name: 'storage-contribrole-user'
+  params: {
+    principalId:  code.outputs.identityPrincipalId
+    roleDefinitionId: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
     principalType: 'ServicePrincipal'
   }
 }
