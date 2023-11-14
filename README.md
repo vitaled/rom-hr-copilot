@@ -2,11 +2,7 @@
 
 ## Description
 
-## How to run
-
-### Prerequisites
-
-### Standalone
+## Run locally
 
 Create a virtual environment
 
@@ -49,4 +45,42 @@ Run the application
 
 ```ps1
 streamlit run Home.py --server.port 80 --server.enableXsrfProtection false
+```
+
+## Run on Azure
+
+### Using Azure Development CLI
+
+#### Prerequisites
+
+1. Install the Azure Development CLI following the instructions [here](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-windows)
+
+2. Install Git following the instructions [here](https://git-scm.com/downloads)
+
+3. Install Docker Desktop following the instructions [here](https://www.docker.com/products/docker-desktop)
+
+#### Deploying the application
+
+Clone this repository:
+
+```ps1
+git clone https://github.com/vitaled/rom-hr-copilot
+```
+
+Navigate to the code directory
+
+```ps1
+cd code
+```
+
+Login to Azure using azd:
+
+```ps1
+azd auth login
+```
+
+Create the infrastructure and deploy the application:
+
+```ps1
+azd up
 ```
