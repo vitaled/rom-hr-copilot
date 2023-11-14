@@ -24,6 +24,7 @@ def check_deployment():
         st.error(traceback.format_exc())
 
 try:
+    st.set_page_config(layout="wide")
     StreamlitHelper.hide_footer()
 
     st.title("HR Assistant Open AI")

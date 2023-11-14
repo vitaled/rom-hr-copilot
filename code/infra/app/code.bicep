@@ -10,7 +10,7 @@ param openAIBase string
 
 param openAIEngine string
 param formRecognizerEndpoint string
-
+param storageAccountName string
 param exists bool
 
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
@@ -115,6 +115,10 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
             {
               name: 'OPENAI_MAX_TOKENS'
               value: '2000'
+            }
+            {
+              name: 'BLOB_ACCOUNT_NAME'
+              value: storageAccountName
             }
           ]
           resources: {
