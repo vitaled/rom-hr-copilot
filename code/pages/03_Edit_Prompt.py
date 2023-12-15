@@ -17,6 +17,7 @@ import json
 import pandas as pd
 import re
 from utilities.AzureBlobStorageClient import AzureBlobStorageClient
+from utilities.StreamlitHelper import StreamlitHelper
 
 def read_file(file: str):
   with open(os.path.join('prompts', file),'r', encoding='utf-8') as file:
@@ -28,7 +29,7 @@ def write_file(file: str, content: str):
     
 def salvataggio():
     try:
-            
+      StreamlitHelper.hide_footer()
       write_file("estrazione_esperienza_jd.txt",             st.session_state["prompt_estrazione_esperienza_jd"])
       write_file("estrazione_esperienza_cv.txt",             st.session_state["prompt_estrazione_esperienza_cv"])
       write_file("estrazione_industry.txt",                  st.session_state["prompt_estrazione_industry"])
@@ -52,6 +53,7 @@ def salvataggio():
         print(error_string)
 
 try:
+    StreamlitHelper.setup_session_state()
     st.set_page_config(layout="wide")
     profile = st.selectbox("Profilo:", ("Profilo n.1", "Profilo n.2", "Profilo n.3"),key="profile")
     

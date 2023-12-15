@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 from azure.identity import ManagedIdentityCredential
 
+from azure.ai.documentintelligence import DocumentIntelligenceClient
+
 
 class AzureFormRecognizerClient:
     def __init__(self, form_recognizer_endpoint: str = None, form_recognizer_key: str = None):
@@ -11,8 +13,7 @@ class AzureFormRecognizerClient:
         load_dotenv()
 
         self.pages_per_embeddings = 4
-        self.section_to_exclude = ['footnote',
-                                   'pageHeader', 'pageFooter', 'pageNumber']
+        self.section_to_exclude = ['footnote','pageFooter', 'pageNumber']
 
         self.form_recognizer_endpoint: str = form_recognizer_endpoint if form_recognizer_endpoint else os.getenv(
             'FORM_RECOGNIZER_ENDPOINT')
@@ -69,14 +70,11 @@ class AzureFormRecognizerClient:
 
     def analyze_read(self, pdf: bytes):
 
-        document_analysis_client = DocumentAnalysisClient(
-            endpoint=self.form_recognizer_endpoint, credential=self._get_credential()
-        )
-
-        poller = document_analysis_client.begin_analyze_document(
-            "prebuilt-layout", document=pdf)
+        document_analysis_client = DocumentIntelligenceClient(
+            endpoint=self.form_recognizer_endpoint, credential=self._get_credential())
+#"prebuilt-layout"
+        poller = document_analysis_client.begin_analyze_document("prebuilt-layout",analyze_request=pdf,content_type="application/pdf")
         layout = poller.result()
-
         results = []
         page_result = ''
         for p in layout.paragraphs:

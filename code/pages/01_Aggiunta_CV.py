@@ -4,8 +4,10 @@ import mimetypes
 import traceback
 from utilities.LLMHelper import LLMHelper
 from utilities.AzureBlobStorageClient import AzureBlobStorageClient
+from utilities.StreamlitHelper import StreamlitHelper
 
 try:
+    StreamlitHelper.setup_session_state()
     st.title("Aggiunta CV e Job Description")
     st.markdown("In questa pagina è possibile caricare nuovi CV. I documenti verranno caricati su Azure Blob Storage.")    
     

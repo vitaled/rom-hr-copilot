@@ -40,9 +40,13 @@ class AzureBlobStorageClient:
         blob_bytes = downloader.readall()
         return blob_bytes
 
-    def download_blob_to_string(self, blob_service_client: BlobServiceClient, container_name, blob_name):
-        blob_client = blob_service_client.get_blob_client(
+    def download_blob_to_string(self, container_name, blob_name):
+        blob_client = self.blob_service_client.get_blob_client(
             container=container_name, blob=blob_name)
+        
+        if not blob_client.exists():
+            return None
+        
         downloader = blob_client.download_blob(
             max_concurrency=1, encoding='UTF-8')
         blob_text = downloader.readall()
@@ -132,3 +136,12 @@ class AzureBlobStorageClient:
     def get_blob_sas(self, file_name, container_name: str):
         # Generate a SAS URL to the blob and return it
         return f"https://{self.account_name}.blob.core.windows.net/{container_name}/{file_name}" + "?" + generate_blob_sas(account_name=self.account_name, container_name=container_name, blob_name=file_name, account_key=self.account_key, permission='r', expiry=datetime.utcnow() + timedelta(hours=1))
+
+    def delete_blob(self, container_name, file_name):
+        blob_client = self.blob_service_client.get_blob_client(
+            container=container_name, blob=file_name)
+        if not blob_client.exists():
+                return False
+        blob_client.delete_blob()
+
+        return True

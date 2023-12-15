@@ -5,7 +5,7 @@ import traceback
 import base64
 from utilities.LLMHelper import LLMHelper
 from utilities.AzureBlobStorageClient import AzureBlobStorageClient
-
+from utilities.StreamlitHelper import StreamlitHelper
 
 def ask_question():
 
@@ -30,8 +30,8 @@ def get_resume(resume):
         cv_text = client.download_blob_to_bytes("processed", resume+".txt")
         st.session_state["cv_text"] = cv_text
 
-
 try:
+    StreamlitHelper.setup_session_state()
     st.set_page_config(layout="wide")
     st.title("Visualizza e Interrogazione CV")
     st.markdown(

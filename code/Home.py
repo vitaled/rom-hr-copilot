@@ -39,7 +39,7 @@ try:
         st.button("Controllo Deployment", on_click=check_deployment)
  
     st.session_state["token_response"] = st.slider("Tokens response length", 100, 1500, 1000)
-    st.session_state["temperature"] = st.slider("Temperature", 0.0, 1.0, 0.0)
+    st.session_state["temperature"] = st.slider("Temperature", 0.0, 1.0, 0.7)
     
 except Exception:
     st.error(traceback.format_exc())

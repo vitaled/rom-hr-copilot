@@ -11,6 +11,48 @@ import pandas as pd
 import re
 from utilities.AzureBlobStorageClient import AzureBlobStorageClient
 import io
+from utilities.StreamlitHelper import StreamlitHelper
+
+def reset(profile,resume):
+
+    client = AzureBlobStorageClient()
+
+    
+    if not client.delete_blob("processed",resume+".txt"):
+        st.success("CV non ancora processato")
+        return
+    
+    if profile == "Profilo n.1":
+        prompts = [
+    {
+        "description": "Paragrafo 1: Area di Provenienza",
+        "text": "Paragrafo-1.txt"
+    },
+    {
+        "description": "Paragrafo 2: Titolo di Studio",
+        "text": "Paragrafo-2.txt"
+    },
+    {
+        "description": "Paragrafo 3.1: Competenze Professionali (1/2)",
+        "text": "Paragrafo-3.1.txt"
+    },
+    {
+        "description": "Paragrafo 3.2: Competenze Professionali (2/2)",
+        "text": "Paragrafo-3.2.txt"
+    }
+    ]
+        for index,prompt in enumerate(prompts):
+            client.delete_blob("analyzed",resume+"_"+prompt["text"])
+    elif profile == "Profilo n.2":
+        st.error("Profilo non ancora implementato")
+    elif profile == "Profilo n.3":
+        st.error("Profilo non ancora implementato")
+    else:
+        st.error("Profilo non riconosciuto")
+
+    st.success("Reset completato")
+    logger.info("Reset completato")
+    return
 
 
 def valutazione(profile,resume):
@@ -29,7 +71,7 @@ def valutazione(profile,resume):
       client.upload_file(cv_text, resume+".txt", "processed", "txt")
       
 
-      llm_helper = LLMHelper(temperature=0, max_tokens=500)
+      llm_helper = LLMHelper(temperature=st.session_state["temperature"], max_tokens=st.session_state["token_response"]) 
       
       if profile == "Profilo n.1":
             prompts = [
@@ -54,15 +96,17 @@ def valutazione(profile,resume):
 
             my_bar.progress(30, text="Impostazione analisi prompts")
             for index,prompt in enumerate(prompts):
-                with open(os.path.join('prompts', 'profilo01', prompt["text"]), 'r', encoding='utf-8') as file:
-                    prompt_text = file.read()
-                #st.markdown(prompt["description"])
-                # st.markdown(prompt_text)
-                prompt['output'] = llm_helper.get_hr_completion(prompt_text.replace('{cv}', cv_text))
-                progress = int(30 + 70 * (index + 1) / len(prompts))
-                my_bar.progress(progress, text=f"Analisi attraversi prompt N. "+str(index+1))
-                #st.markdown(output)
-                time.sleep(3)
+                output = client.download_blob_to_string("analyzed", resume+"_"+prompt["text"])
+                if output is not None:
+                    prompt["output"] = output                    
+                else:
+                    with open(os.path.join('prompts', 'profilo01', prompt["text"]), 'r', encoding='utf-8') as file:
+                        prompt_text = file.read()
+                    prompt['output'] = llm_helper.get_hr_completion(prompt_text.replace('{cv}', cv_text))
+                    progress = int(30 + 70 * (index + 1) / len(prompts))
+                    my_bar.progress(progress, text=f"Analisi attraversi prompt N. "+str(index+1))
+                    #st.markdown(output)
+                    time.sleep(3)
       
       elif profile == "Profilo n.2":
             st.error("Profilo non ancora implementato")
@@ -80,7 +124,8 @@ def valutazione(profile,resume):
         with st.expander(prompt["description"],expanded=False):
             st.markdown(prompt["output"])
             data += prompt["output"] + "\n\n"
-      
+            client.upload_file(data, resume+"_"+prompt["text"], "analyzed", "txt")
+
       st.download_button(
       label="Scarica analisi come txt",
       data=data,
@@ -100,6 +145,7 @@ def valutazione(profile,resume):
 
 
 try:
+    StreamlitHelper.setup_session_state()
     st.set_page_config(layout="wide")
     st.title("Analisi e Calcolo Punteggi per CV")
     profile = st.selectbox(
@@ -127,7 +173,7 @@ try:
     #   button = st.button(label="Inizio Analisi", disabled=True,on_click=valutazione, args=(profile,))
     # else:
     button = st.button(label="Inizio Analisi",on_click=valutazione, args=(profile,resume,))
-
+    button = st.button(label="Reset Analisi Precedente",on_click=reset, args=(profile,resume,))
      
 
 except Exception as e:
