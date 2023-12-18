@@ -222,6 +222,10 @@ module storage 'storage/storage-account.bicep' = {
         name: 'resumes'
         publicAccess: 'None'
       }
+      {
+        name: 'analyzed'
+        publicAccess: 'None'
+      }
     ]
   }
 }
