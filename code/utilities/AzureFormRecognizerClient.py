@@ -1,5 +1,4 @@
 from azure.core.credentials import AzureKeyCredential
-from azure.ai.formrecognizer import DocumentAnalysisClient
 import os
 from dotenv import load_dotenv
 from azure.identity import ManagedIdentityCredential
