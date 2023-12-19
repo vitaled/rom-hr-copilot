@@ -31,8 +31,9 @@ def get_resume(resume):
         st.session_state["cv_text"] = cv_text
 
 try:
-    StreamlitHelper.setup_session_state()
     st.set_page_config(layout="wide")
+    StreamlitHelper.setup_session_state()
+    StreamlitHelper.hide_footer()
     st.title("Visualizza e Interrogazione CV")
     st.markdown(
         "In questa pagina è possibile visionare i CV sia nella forma originale che nella forma testuale")

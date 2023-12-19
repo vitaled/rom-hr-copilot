@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv()
-
+from st_pages import Page, show_pages, add_page_title
 import streamlit as st
 import os
 import traceback
@@ -24,6 +24,21 @@ def check_deployment():
         st.error(traceback.format_exc())
 
 try:
+   # Optional -- adds the title and icon to the current page
+    #add_page_title()
+
+    # Specify what pages should be shown in the sidebar, and what their titles and icons
+    # should be
+    show_pages(
+        [
+            Page("Home.py", "Home"),
+            Page("pages/01_Aggiunta_CV.py", "Aggiungi CV"),
+            Page("pages/02_Analisi_CV.py", "Analisi CV",),
+            Page("pages/03_Prompt.py", "Prompts"),    
+            Page("pages/04_QA_CV.py", "QA CV", )
+        ]
+    )
+
     st.set_page_config(layout="wide")
     StreamlitHelper.hide_footer()
 

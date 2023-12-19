@@ -30,7 +30,7 @@ param openAiSkuName string = 'S0'
 
 param chatGptDeploymentName string // Set in main.parameters.json
 param chatGptDeploymentCapacity int = 30
-param chatGptModelName string = (openAiHost == 'azure') ? 'gpt-4' : 'gpt-4'
+param chatGptModelName string = (openAiHost == 'azure') ? 'gpt-4-32k' : 'gpt-4-32k'
 param chatGptModelVersion string = '0613'
 // param embeddingDeploymentName string // Set in main.parameters.json
 // param embeddingDeploymentCapacity int = 30
@@ -149,7 +149,7 @@ module code './app/code.bicep' = {
     containerAppsEnvironmentName: appsEnv.outputs.name
     containerRegistryName: registry.outputs.name
     openAIBase: 'https://${abbrs.cognitiveServicesAccounts}${resourceToken}.openai.azure.com/'
-    openAIEngine: 'gpt-4'
+    openAIEngine: 'gpt-4-32k'
     formRecognizerEndpoint: 'https://${abbrs.cognitiveServicesFormRecognizer}${resourceToken}.cognitiveservices.azure.com/'
     storageAccountName: '${abbrs.storageStorageAccounts}${resourceToken}'
     exists: codeExists
