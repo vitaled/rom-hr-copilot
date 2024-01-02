@@ -4,3 +4,6 @@ code/utilities/__pycache__
 .env
 __pycache__
 venv
+
+data
+*.json
