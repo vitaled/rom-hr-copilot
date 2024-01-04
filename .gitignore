@@ -1,9 +1,13 @@
 .venv
 code/embeddings_text.csv
 code/utilities/__pycache__
+.vscode
+__*
 .env
 __pycache__
 venv
-
-data
-*.json
+*.xls
+*.xlsx
+*.pdf
+*.png
+*.csv
