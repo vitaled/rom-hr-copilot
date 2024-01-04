@@ -5,4 +5,4 @@ WORKDIR /usr/local/src/myscripts
 RUN pip install -r requirements.txt
 COPY . /usr/local/src/myscripts
 EXPOSE 8080
-CMD ["streamlit", "run", "Home.py", "--server.port", "8080", "--server.enableXsrfProtection", "false"]
+CMD ["sh","./scripts/start_app.sh"]
