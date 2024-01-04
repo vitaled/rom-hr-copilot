@@ -16,16 +16,16 @@ try:
 
     # Specify what pages should be shown in the sidebar, and what their titles and icons
     # should be
-    show_pages(
-        [
-            Page("Home.py", "Home"),
-            Page("pages/01_Aggiunta_CV.py", "Aggiungi Candidato"),
-            Page("pages/02_Analisi_CV.py", "Analisi Candidato",),
-            Page("pages/03_Prompt.py", "Gestione Profili"),    
-            Page("pages/04_QA_CV.py", "Q/A Candidato", ),
-            Page("pages/05_Admin.py", "Impostazioni")
-        ]
-    )
+    # show_pages(
+    #     [
+    #         Page("Home.py", "Home"),
+    #         Page("pages/01_Aggiunta_CV.py", "Aggiungi CV Candidato"),
+    #         Page("pages/02_Analisi_CV.py", "Analisi Candidato",),
+    #         Page("pages/03_Prompt.py", "Gestione Profili"),    
+    #         Page("pages/04_QA_CV.py", "Q/A Candidato", ),
+    #         Page("pages/05_Admin.py", "Impostazioni")
+    #     ]
+    # )
 
     st.set_page_config(layout="wide")
     StreamlitHelper.hide_footer()

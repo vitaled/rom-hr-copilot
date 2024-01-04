@@ -50,9 +50,10 @@ try:
                     hash_md5 = hashlib.md5()
                     hash_md5.update(uploaded_cv.read())
                     file_hash = hash_md5.hexdigest()
-
+                    
                     # Caricamento file su Azure Blob Storage
                     logger.info("Caricamento file su Azure Blob Storage")
+                    uploaded_cv.seek(0)
                     client.upload_file(uploaded_cv, f"{file_hash}.pdf","resumes", uploaded_cv.type)
 
                     # Estrazione testo da CV    
