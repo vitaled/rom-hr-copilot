@@ -48,7 +48,7 @@ try:
                     form_client = AzureFormRecognizerClient()
                     # Calcolo hash del file
                     hash_md5 = hashlib.md5()
-                    hash_md5.update()
+                    hash_md5.update(uploaded_cv.read())
                     file_hash = hash_md5.hexdigest()
 
                     # Caricamento file su Azure Blob Storage
