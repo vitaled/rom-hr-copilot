@@ -12,6 +12,8 @@ param openAIEngine string
 param formRecognizerEndpoint string
 param storageAccountName string
 param exists bool
+param cosmosDbEndpoint string
+param cosmosDbName string
 
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: identityName
@@ -119,6 +121,14 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
             {
               name: 'BLOB_ACCOUNT_NAME'
               value: storageAccountName
+            }
+            {
+              name: 'COSMOS_ENDPOINT'
+              value: cosmosDbEndpoint
+            }
+            {
+              name: 'COSMOS_DATABASE_NAME'
+              value: cosmosDbName
             }
           ]
           resources: {

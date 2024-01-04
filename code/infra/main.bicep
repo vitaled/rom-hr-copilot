@@ -43,12 +43,14 @@ param storageSkuName string
 param storageResourceGroupLocation string = location
 
 //Form Recognizer
-
 param formRecognizerServiceName string = ''
 param formRecognizerResourceGroupName string = ''
 param formRecognizerResourceGroupLocation string = location
 
 param formRecognizerSkuName string = 'S0'
+
+param cosmosDbResourceGroupName string = ''
+param cosmosdbResourceGroupLocation string = location
 
 @description('Id of the user or app to assign application roles')
 param principalId string
@@ -81,6 +83,10 @@ resource openAiResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' exi
 
 resource storageResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(storageResourceGroupName)) {
   name: !empty(storageResourceGroupName) ? storageResourceGroupName : rg.name
+}
+
+resource cosmosDbResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(cosmosDbResourceGroupName)) {
+  name: !empty(cosmosDbResourceGroupName) ? cosmosDbResourceGroupName : rg.name
 }
 
 module monitoring './shared/monitoring.bicep' = {
@@ -152,6 +158,8 @@ module code './app/code.bicep' = {
     openAIEngine: 'gpt-4-32k'
     formRecognizerEndpoint: 'https://${abbrs.cognitiveServicesFormRecognizer}${resourceToken}.cognitiveservices.azure.com/'
     storageAccountName: '${abbrs.storageStorageAccounts}${resourceToken}'
+    cosmosDbEndpoint: 'https://${abbrs.documentDBDatabaseAccounts}${resourceToken}.documents.azure.com/'
+    cosmosDbName: 'poccmrdb'
     exists: codeExists
   }
   scope: rg
@@ -230,28 +238,16 @@ module storage 'storage/storage-account.bicep' = {
   }
 }
 
-
-
-// // USER ROLES
-// module openAiRoleUser 'core/security/role.bicep' = if (openAiHost == 'azure') {
-//   scope: openAiResourceGroup
-//   name: 'openai-role-user'
-//   params: {
-//     principalId: principalId
-//     roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
-//     principalType: 'User'
-//   }
-// }
-
-// module formRecognizerRoleUser 'core/security/role.bicep' = {
-//   scope: formRecognizerResourceGroup
-//   name: 'formrecognizer-role-user'
-//   params: {
-//     principalId: principalId
-//     roleDefinitionId: 'a97b65f3-24c7-4388-baec-2e87135dc908'
-//     principalType: 'User'
-//   }
-// }
+module cosmosdb 'storage/cosmosdb.bicep' = {
+  name: 'cosmosdb'
+  scope: cosmosDbResourceGroup
+  params: {
+    name: !empty(cosmosDbResourceGroupName) ? cosmosDbResourceGroupName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
+    location: cosmosdbResourceGroupLocation
+    databaseName: 'poccmrdb'
+    principalId: code.outputs.identityPrincipalId
+  }
+}
 
 // SYSTEM IDENTITIES
 module openAiRoleBackend 'core/security/role.bicep' = if (openAiHost == 'azure') {
@@ -288,7 +284,7 @@ module storageContribRoleUser 'core/security/role.bicep' = {
   scope: storageResourceGroup
   name: 'storage-contribrole-user'
   params: {
-    principalId:  code.outputs.identityPrincipalId
+    principalId: code.outputs.identityPrincipalId
     roleDefinitionId: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
     principalType: 'ServicePrincipal'
   }
