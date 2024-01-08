@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import io
 from utilities.AzureCosmosDBClient import AzureCosmosDBClient
+from utilities.SessionHelper import SessionHelper
 import uuid
 load_dotenv()
 logger = logging.getLogger(
@@ -126,84 +127,103 @@ def check_deployment():
 
 try:
     cosmos_client = AzureCosmosDBClient()
-    show_pages(
-        [
-            Page("Home.py", "Home"),
-            Page("pages/01_Aggiunta_CV.py", "Aggiungi Candidato"),
-            Page("pages/02_Analisi_CV.py", "Analisi Candidato",),
-            Page("pages/03_Prompt.py", "Gestione Profili"),
-            Page("pages/04_QA_CV.py", "Q/A Candidato", ),
-            Page("pages/05_Admin.py", "Impostazioni")
-        ]
-    )
-
     st.set_page_config(layout="wide")
     StreamlitHelper.hide_footer()
 
-    st.title("Impostazioni HR Assistant Open AI")
-    with st.expander("Impostazioni LLM", expanded=True):
-        llm_helper = LLMHelper()
+    user = SessionHelper.get_current_user()
 
-        # col1, col2, col3 = st.columns([1,2,1])
-        # with col1:
-        #     st.write("")
-        #     #st.image(os.path.join('images','citta-metropolitana-roma-capitale-logo.png'))
-        # with col3:
+    if user.get_role() != "Admin":
+        st.error("Non sei autorizzato ad accedere a questa pagina")
+    else:
+        st.title("Impostazioni HR Assistant Open AI")
+        with st.expander("Impostazioni LLM", expanded=False):
+            llm_helper = LLMHelper()
 
-        st.session_state["token_response"] = st.slider(
-            "Tokens response length", 100, 1500, 1000)
-        st.session_state["temperature"] = st.slider(
-            "Temperature", 0.0, 1.0, 0.7)
-        st.button("Controllo Deployment", on_click=check_deployment)
+            # col1, col2, col3 = st.columns([1,2,1])
+            # with col1:
+            #     st.write("")
+            #     #st.image(os.path.join('images','citta-metropolitana-roma-capitale-logo.png'))
+            # with col3:
 
-    with st.expander("Dati Supporto", expanded=True):
-        st.markdown("### Dati Caricati")
-        employees_count = cosmos_client.get_candidates_with_candidacy_count()
-        employees_with_history_count = cosmos_client.get_candidates_with_history_count()
-        employees_with_evaluation_count = cosmos_client.get_candidates_with_evaluation_count()
-        
-        st.markdown(f"Impiegati con candidature attive: `{employees_count}`")
-        st.markdown(
-            f"Impiegati con storico caricato: `{employees_with_history_count}`")
-        st.markdown(
-            f"Impiegati con valutazione caricata: `{employees_with_evaluation_count}`")
+            st.session_state["token_response"] = st.slider(
+                "Tokens response length", 100, 1500, 1000)
+            st.session_state["temperature"] = st.slider(
+                "Temperature", 0.0, 1.0, 0.7)
+            st.button("Controllo Deployment", on_click=check_deployment)
 
-        st.markdown("### Caricamento nuovi dati")
-        st.markdown("""
-                    - I dati devono essere caricati in formato testo, con un record per riga. 
-                    - I campi devono essere separati da tabulazione. 
-                    - I dati per i candidati vengono uniti sulla base del codice fiscale.
-                    """)
-        candidates_upload = st.file_uploader(
-            "Caricamento dati candidati", type=None, accept_multiple_files=False)
-        if candidates_upload is not None:
-            if st.button("Carica Dati candidati"):
-                try:
-                    upload_candidates_data(candidates_upload)
-                    st.success("Caricamento completato")
-                except Exception as e:
-                    st.error(traceback.format_exc())
+        with st.expander("Dati Supporto", expanded=False):
+            st.markdown("### Dati Caricati")
+            employees_count = cosmos_client.get_candidates_with_candidacy_count()
+            employees_with_history_count = cosmos_client.get_candidates_with_history_count()
+            employees_with_evaluation_count = cosmos_client.get_candidates_with_evaluation_count()
 
-        seniority_upload = st.file_uploader(
-            "Caricamento dati anzianità", type=None, accept_multiple_files=False)
-        if seniority_upload is not None:
-            if st.button("Carica Dati Anzianità"):
-                try:
-                    upload_seniority_data(seniority_upload)
-                    st.success("Caricamento completato")
-                except Exception as e:
-                    st.error(traceback.format_exc())
+            st.markdown(
+                f"Impiegati con candidature attive: `{employees_count}`")
+            st.markdown(
+                f"Impiegati con storico caricato: `{employees_with_history_count}`")
+            st.markdown(
+                f"Impiegati con valutazione caricata: `{employees_with_evaluation_count}`")
 
-        evaluation_upload = st.file_uploader(
-            "Caricamento dati valutazioni", type=None, accept_multiple_files=False)
-        if evaluation_upload is not None:
-            if st.button("Carica Dati Valutazioni"):
-                try:
-                    upload_evalations_data(evaluation_upload)
-                    st.success("Caricamento completato")
-                except Exception as e:
-                    st.error(traceback.format_exc())
+            st.markdown("### Caricamento nuovi dati")
+            st.markdown("""
+                        - I dati devono essere caricati in formato testo, con un record per riga. 
+                        - I campi devono essere separati da tabulazione. 
+                        - I dati per i candidati vengono uniti sulla base del codice fiscale.
+                        """)
+            candidates_upload = st.file_uploader(
+                "Caricamento dati candidati", type=None, accept_multiple_files=False)
+            if candidates_upload is not None:
+                if st.button("Carica Dati candidati"):
+                    try:
+                        upload_candidates_data(candidates_upload)
+                        st.success("Caricamento completato")
+                    except Exception as e:
+                        st.error(traceback.format_exc())
 
+            seniority_upload = st.file_uploader(
+                "Caricamento dati anzianità", type=None, accept_multiple_files=False)
+            if seniority_upload is not None:
+                if st.button("Carica Dati Anzianità"):
+                    try:
+                        upload_seniority_data(seniority_upload)
+                        st.success("Caricamento completato")
+                    except Exception as e:
+                        st.error(traceback.format_exc())
+
+            evaluation_upload = st.file_uploader(
+                "Caricamento dati valutazioni", type=None, accept_multiple_files=False)
+            if evaluation_upload is not None:
+                if st.button("Carica Dati Valutazioni"):
+                    try:
+                        upload_evalations_data(evaluation_upload)
+                        st.success("Caricamento completato")
+                    except Exception as e:
+                        st.error(traceback.format_exc())
+        with st.expander('Gestione Utenti', expanded=False):
+
+            users = cosmos_client.get_users()
+
+            colms = st.columns([1, 1, 1, 1])
+
+            fields = ['Id',
+                      'Nome',
+                      'Admin',
+                      'Profiles']
+
+            for col, field_name in zip(colms, fields):
+                # header
+                col.write(field_name)
+
+            for user in users:
+                col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+                col2.write(user.get("name"))
+                col1.write(user.get("id"))
+                col3.toggle(' ', value=user.get("role") ==
+                            "Admin", key=user.get("id"))
+                col4.multiselect(' ', options=['HR', 'Manager', 'Employee'], default=user.get(
+                    "profiles"),label_visibility='collapsed')
+            # users_df = pd.DataFrame(users)
+            # st.dataframe(users_df)
 
 except:
     st.error(traceback.format_exc())

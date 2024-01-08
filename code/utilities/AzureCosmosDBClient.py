@@ -16,8 +16,9 @@ class AzureCosmosDBClient:
         if self.key:
             self.client = CosmosClient(self.endpoint, self.key)
         else:
-            self.client = CosmosClient(self.endpoint, credential=ManagedIdentityCredential(client_id=os.getenv("APP_CONTAINER_CLIENT_ID")))
-        self.database_name =  os.getenv('COSMOS_DATABASE_NAME')
+            self.client = CosmosClient(self.endpoint, credential=ManagedIdentityCredential(
+                client_id=os.getenv("APP_CONTAINER_CLIENT_ID")))
+        self.database_name = os.getenv('COSMOS_DATABASE_NAME')
         self.database = self.client.get_database_client(self.database_name)
         self.container_name = 'llm'
         self.users = self.database.get_container_client('users')
@@ -25,86 +26,99 @@ class AzureCosmosDBClient:
         self.candidates = self.database.get_container_client('candidates')
         self.profiles = self.database.get_container_client('profiles')
         self.analyses = self.database.get_container_client('analyses')
-        
+
     def put_analysis(self, analysis):
         self.analyses.upsert_item(analysis)
-    
+
     def get_analysis_by_candidate_id(self, candidate_id):
         query = f"SELECT * FROM analyses a WHERE a.CandidateId = '{candidate_id}'"
-        items = self.analyses.query_items(query=query, enable_cross_partition_query=True)
+        items = self.analyses.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def get_analysis_by_candidate_id_and_profile(self, candidate_id, profile_id):
         query = f"SELECT * FROM analyses a WHERE a.CandidateId = '{candidate_id}' AND a.ProfileId = '{profile_id}'"
-        items = self.analyses.query_items(query=query, enable_cross_partition_query=True)
+        items = self.analyses.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def delete_analysis_by_candidate_id_and_profile(self, candidate_id, profile_id):
-        analysis = list(self.get_analysis_by_candidate_id_and_profile(candidate_id, profile_id))
+        analysis = list(self.get_analysis_by_candidate_id_and_profile(
+            candidate_id, profile_id))
         for a in analysis:
             self.analyses.delete_item(a['id'], a['AnalysisId'])
 
     def put_candidate(self, candidate):
         self.candidates.upsert_item(candidate)
 
-
     def get_candidates(self):
         query = "SELECT * FROM candidates c"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
-    
+
     def get_candidates_count(self):
         query = "SELECT VALUE COUNT(1) FROM candidates c"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         count = list(items)[0]
         return count
 
     def get_candidate_by_id(self, id):
         query = f"SELECT * FROM candidates c WHERE c.CandidateId = '{id}'"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def get_candidates_with_candidacy_count(self):
         query = "SELECT VALUE COUNT(1) FROM candidates c WHERE ARRAY_LENGTH(c.candidature) > 0"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         count = list(items)[0]
         return count
 
     def get_candidates_with_evaluation_count(self):
         query = "SELECT VALUE COUNT(1) FROM candidates c WHERE IS_DEFINED(c.Valutazioni)"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         count = list(items)[0]
         return count
 
     def get_candidates_with_history_count(self):
         query = 'SELECT VALUE COUNT(1) FROM candidates c WHERE ARRAY_LENGTH(c["Storia Rapporto Lavorativo"]) > 0'
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         count = list(items)[0]
         return count
-    
+
     def get_candidate_by_cf(self, cf):
         query = f"SELECT * FROM candidates c WHERE c.CodiceFiscale = '{cf}'"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def get_candidate_by_profile(self, profile):
         query = f"SELECT * FROM candidates c WHERE ARRAY_CONTAINS(c.candidature, '{profile}')"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def get_candidate_by_name_and_surname(self, name, surname):
         query = f"SELECT * FROM candidates c WHERE c.Nome = '{name}' AND c.Cognome = '{surname}'"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def get_resumes(self):
         query = "SELECT * FROM resumes r"
-        items = self.resumes.query_items(query=query, enable_cross_partition_query=True)
+        items = self.resumes.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def get_resume_by_id(self, id):
         query = f"SELECT * FROM resumes r WHERE r.id = '{id}'"
-        items = self.resumes.query_items(query=query, enable_cross_partition_query=True)
+        items = self.resumes.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def put_resume(self, resume):
@@ -112,27 +126,46 @@ class AzureCosmosDBClient:
 
     def get_users(self):
         query = "SELECT * FROM users u"
-        items = self.users.query_items(query=query, enable_cross_partition_query=True)
+        items = self.users.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
-    
+
     def get_user_by_id(self, id):
-        query = f"SELECT * FROM users u WHERE u.UserId = '{id}'"
-        items = self.users.query_items(query=query, enable_cross_partition_query=True)
+        query = f"SELECT * FROM users u WHERE u.id = '{id}'"
+        items = self.users.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
+
+    def get_user(self, principal_id):
+        query = f"SELECT * FROM users u WHERE u.id = '{principal_id}'"
+        items = self.users.query_items(
+            query=query, enable_cross_partition_query=True)
+        return items
+
+    def put_user(self, principal_id, principal_name, role):
+        user = {
+            "id": principal_id,
+            "name": principal_name,
+            "role": role
+        }
+        self.users.upsert_item(user)
 
     def get_profiles(self):
         query = "SELECT * FROM profiles p"
-        items = self.profiles.query_items(query=query, enable_cross_partition_query=True)
+        items = self.profiles.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
-    
+
     def get_profile_by_id(self, id):
         query = f"SELECT * FROM profiles p WHERE p.profile_id = '{id}'"
-        items = self.profiles.query_items(query=query, enable_cross_partition_query=True)
+        items = self.profiles.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
-    
+
     def get_profile_by_description(self, profile_description):
         query = f"SELECT * FROM profiles p WHERE p.profile_description = '{profile_description}'"
-        items = self.profiles.query_items(query=query, enable_cross_partition_query=True)
+        items = self.profiles.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def update_profile(self, profile):
