@@ -13,7 +13,7 @@ class SessionHelper:
         user = User.get_user(principal_id)
 
         if user is None:
-            user_dict = User.set_user(principal_id, principal_name, 'None')
-            user = User(user_dict["id"], user_dict["name"], user_dict["role"])
-        
+            user = User(principal_id    , principal_name,'None')
+            User.set_user(principal_id, principal_name, 'None')
+            
         return user
