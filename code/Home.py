@@ -20,5 +20,6 @@ try:
     logger.info('Connecting to Home Page')
     user = SessionHelper.get_current_user()
     logger.info('Connected User: ' + user.get_name())
+    st.title('Benvenuto: ' + user.get_name())
 except Exception:
     st.error(traceback.format_exc())
