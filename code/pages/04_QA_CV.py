@@ -42,8 +42,9 @@ try:
     StreamlitHelper.hide_footer()
     user = SessionHelper.get_current_user()
     available_profiles = user.get_profiles()
-    st.title("Visualizza e Interrogazione CV")
-    st.markdown("In questa pagina è possibile visionare i CV sia nella forma originale che nella forma testuale")
+    st.title("Visualizzazione e Interrogazione CV")
+    st.markdown("In questa pagina è possibile visionare i CV sia nella forma originale che nella forma testuale, e interrogare il modello di OpenAI per ottenere risposte alle domande poste sul CV.")
+    
     
 
     st.title("Seleziona curriculum vitae")

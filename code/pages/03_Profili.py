@@ -59,21 +59,21 @@ try:
 
     st.title("Modifica Prompts")
     if profile:
-      profile = list(cosmos_client.get_profile_by_id(profile))[0]
-      st.session_state["current_profile"] = profile
-      for prompt in profile['prompts']:
-          tab_text, tab_markdown = st.tabs(["Testo Prompt", "Preview Markdown"])
-          with tab_text:
-              st.session_state[prompt['description']] = st.text_area(
-                  label=prompt['description'], value=prompt['text'], height=300)
-          with tab_markdown:
-              st.markdown(st.session_state[prompt['description']])
+        profile = list(cosmos_client.get_profile_by_id(profile))[0]
+        st.session_state["current_profile"] = profile
+        for prompt in profile['prompts']:
+            tab_text, tab_markdown = st.tabs(
+                ["Testo Prompt", "Preview Markdown"])
+            with tab_text:
+                st.session_state[prompt['description']] = st.text_area(
+                    label=prompt['description'], value=prompt['text'], height=300)
+            with tab_markdown:
+                st.markdown(st.session_state[prompt['description']])
 
-          # st.session_state[prompt['description']] = st.text_area(label=prompt['description'],value=prompt['text'], height=300)
-
-      st.button(label="Salvataggio Prompt", disabled=False, on_click=salvataggio)
+        st.button(label="Salvataggio Prompt",
+                  disabled=False, on_click=salvataggio)
     else:
         st.warning("Non hai accesso a nessun profilo di selezione")
-        
+
 except Exception as e:
     st.error(traceback.format_exc())
