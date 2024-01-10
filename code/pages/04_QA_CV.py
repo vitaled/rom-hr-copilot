@@ -6,7 +6,10 @@ from utilities.LLMHelper import LLMHelper
 from utilities.AzureBlobStorageClient import AzureBlobStorageClient
 from utilities.StreamlitHelper import StreamlitHelper
 from utilities.AzureCosmosDBClient import AzureCosmosDBClient
-import logging as logger
+import logging
+from utilities.SessionHelper import SessionHelper
+logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
+logger.setLevel(logging.WARNING)
 
 def ask_question():
 
@@ -37,15 +40,22 @@ try:
     st.set_page_config(layout="wide")
     StreamlitHelper.setup_session_state()
     StreamlitHelper.hide_footer()
+    user = SessionHelper.get_current_user()
+    available_profiles = user.get_profiles()
     st.title("Visualizza e Interrogazione CV")
     st.markdown("In questa pagina è possibile visionare i CV sia nella forma originale che nella forma testuale")
+    
 
     st.title("Seleziona curriculum vitae")
     client = AzureBlobStorageClient()
     cosmos_client = AzureCosmosDBClient()
 
+    available_profiles = user.get_profiles()
     logger.info("Recupero lista CV")
-    candidates = cosmos_client.get_candidates()
+
+    #candidates = cosmos_client.get_candidates()
+    candidates = cosmos_client.get_candidate_by_profiles(available_profiles)
+    
     
     #filter out candidates where there is no resume_id
     candidates_list = [candidate for candidate in candidates if "resume_id" in candidate]

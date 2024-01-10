@@ -13,8 +13,8 @@ from utilities.AzureCosmosDBClient import AzureCosmosDBClient
 import uuid
 from utilities.SessionHelper import SessionHelper
 load_dotenv()
-logger = logging.getLogger(
-    'azure.core.pipeline.policies.http_logging_policy').setLevel(logging.WARNING)
+logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
+logger.setLevel(logging.WARNING)
 
 
 def upload_candidates_data(uploaded_data):
@@ -125,32 +125,59 @@ def check_deployment():
         st.error(traceback.format_exc())
 
 
+def on_setting_change():
+    st.session_state['settings_changed'] = True
+
+
+def save_users():
+    
+    try:
+        if st.session_state['settings_changed'] is False:
+            st.error("Nessuna modifica da salvare")
+        else:
+            cosmos_client = AzureCosmosDBClient()
+            users = cosmos_client.get_users()
+            for user in users:
+                user["role"] = "Admin" if st.session_state[user.get(
+                    "id")+"_role"] else "User"
+                user["profiles"] = st.session_state[user.get("id") + "_profiles"]
+                cosmos_client.put_user(
+                    user['id'], user['name'], user['role'], user['profiles'])
+            st.session_state['settings_changed'] = False
+            st.success("Salvataggio Completato")
+    except Exception as e:
+        error_string = traceback.format_exc()
+        st.error(error_string)
+        logger.error(error_string)
+
+
 try:
+    if "settings_changed" not in st.session_state:
+        st.session_state["settings_changed"] = False
     cosmos_client = AzureCosmosDBClient()
     st.set_page_config(layout="wide")
     StreamlitHelper.hide_footer()
 
-
     user = SessionHelper.get_current_user()
     if user.get_role() != 'Admin':
         st.error("Non hai i permessi per visualizzare questa pagina")
-        st.stop()
-    else: 
+    else:
         st.title("Impostazioni HR Assistant Open AI")
-        with st.expander("Impostazioni LLM", expanded=True):
+        with st.expander("Impostazioni LLM", expanded=False):
             llm_helper = LLMHelper()
             st.session_state["token_response"] = st.slider(
                 "Tokens response length", 100, 1500, 1000)
             st.session_state["temperature"] = st.slider(
                 "Temperature", 0.0, 1.0, 0.7)
             st.button("Controllo Deployment", on_click=check_deployment)
-        with st.expander("Dati Supporto", expanded=True):
+        with st.expander("Dati Supporto", expanded=False):
             st.markdown("### Dati Caricati")
             employees_count = cosmos_client.get_candidates_with_candidacy_count()
             employees_with_history_count = cosmos_client.get_candidates_with_history_count()
             employees_with_evaluation_count = cosmos_client.get_candidates_with_evaluation_count()
-            
-            st.markdown(f"Impiegati con candidature attive: `{employees_count}`")
+
+            st.markdown(
+                f"Impiegati con candidature attive: `{employees_count}`")
             st.markdown(
                 f"Impiegati con storico caricato: `{employees_with_history_count}`")
             st.markdown(
@@ -191,7 +218,31 @@ try:
                         st.success("Caricamento completato")
                     except Exception as e:
                         st.error(traceback.format_exc())
+        with st.expander('Gestione Utenti', expanded=False):
+            users = cosmos_client.get_users()
+            profiles = cosmos_client.get_profiles()
+            profiles_description = [profile["profile_id"]
+                                    for profile in profiles]
+            colms = st.columns([1, 1, 1, 1])
+            fields = ['Id',
+                      'Nome',
+                      'Admin',
+                      'Profiles']
 
+            for col, field_name in zip(colms, fields):
+                # header
+                col.write(field_name)
+
+            for user in users:
+                col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+                col2.write(user.get("name"))
+                col1.write(user.get("id"))
+                col3.toggle(' ', value=user.get("role") ==
+                            "Admin", key=user.get("id")+"_role")
+
+                col4.multiselect(' ', options=profiles_description, default=user.get(
+                    "profiles"), label_visibility='collapsed', on_change=on_setting_change, key=user.get("id") + "_profiles")
+            st.button("Salva", disabled=not st.session_state['settings_changed'], on_click=save_users)
 
 except:
     st.error(traceback.format_exc())

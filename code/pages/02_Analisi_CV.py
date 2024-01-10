@@ -1,20 +1,19 @@
-import logging as logger
+import logging
 import streamlit as st
-import os
 import re
 import traceback
 from utilities.LLMHelper import LLMHelper
 from utilities.AzureFormRecognizerClient import AzureFormRecognizerClient
-from collections import OrderedDict
-import time
 import json
 import pandas as pd
 import uuid
 import re
 from utilities.AzureBlobStorageClient import AzureBlobStorageClient
-import io
 from utilities.StreamlitHelper import StreamlitHelper
 from utilities.AzureCosmosDBClient import AzureCosmosDBClient
+from utilities.SessionHelper import SessionHelper
+logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
+logger.setLevel(logging.WARNING)
 
 
 def reset(profile, resume):
@@ -163,6 +162,8 @@ try:
     st.set_page_config(layout="wide")
     StreamlitHelper.setup_session_state()
     StreamlitHelper.hide_footer()
+    user = SessionHelper.get_current_user()
+    available_profiles = user.get_profiles()
 
     st.title("Analisi e Calcolo Punteggi per CV")
     st.markdown(
@@ -172,15 +173,14 @@ try:
     cosmos_client = AzureCosmosDBClient()
     # Get all profiles
     profiles = cosmos_client.get_profiles()
-    profiles_description = [profile["profile_id"] for profile in profiles]
+    profiles_description = [profile["profile_id"] for profile in profiles if profile["profile_id"] in available_profiles]
     profile = st.selectbox("Profilo:", profiles_description, key="profile")
 
     st.markdown("#### Seleziona candidato")
 
     resumes = cosmos_client.get_candidate_by_profile(profile)
 
-    # resumes = [x['name'] for x in resumes]
-    # resume = st.selectbox("Resumes", resumes)
+
 
     # # Show candidates table
     colms = st.columns((1, 1, 1, 1, 1, 1, 1, 1))
@@ -191,7 +191,7 @@ try:
               'Anzianità Presente',
               'Analisi Effettuata',
               'Punteggio attuale']
-    
+
     for col, field_name in zip(colms, fields):
         # header
         col.write(field_name)

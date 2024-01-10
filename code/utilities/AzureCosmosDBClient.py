@@ -1,6 +1,7 @@
 # This is a set of utilities to connect to a cosmos db instance on Azure.
 
 import os
+from typing import List
 from azure.cosmos import CosmosClient, PartitionKey, exceptions
 from dotenv import load_dotenv
 import json
@@ -103,6 +104,17 @@ class AzureCosmosDBClient:
             query=query, enable_cross_partition_query=True)
         return items
 
+    def get_candidate_by_profiles(self,profiles:List[str]):
+        if len(profiles) == 0:
+            return []   
+        
+        query = f"SELECT * FROM candidates c WHERE ARRAY_CONTAINS(c.candidature, '{profiles[0]}')"
+        for profile in profiles[1:]:
+            query += f" OR ARRAY_CONTAINS(c.candidature, '{profile}')"
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
+        return items
+        
     def get_candidate_by_name_and_surname(self, name, surname):
         query = f"SELECT * FROM candidates c WHERE c.Nome = '{name}' AND c.Cognome = '{surname}'"
         items = self.candidates.query_items(
@@ -142,11 +154,12 @@ class AzureCosmosDBClient:
             query=query, enable_cross_partition_query=True)
         return items
 
-    def put_user(self, principal_id, principal_name, role):
+    def put_user(self, principal_id, principal_name, role, profiles):
         user = {
             "id": principal_id,
             "name": principal_name,
-            "role": role
+            "role": role,
+            "profiles": profiles
         }
         self.users.upsert_item(user)
 
