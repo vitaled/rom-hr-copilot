@@ -10,11 +10,11 @@ from dotenv import load_dotenv
 import pandas as pd
 import io
 from utilities.AzureCosmosDBClient import AzureCosmosDBClient
-# from utilities.SessionHelper import SessionHelper
 import uuid
+from utilities.SessionHelper import SessionHelper
 load_dotenv()
-logger = logging.getLogger(
-    'azure.core.pipeline.policies.http_logging_policy').setLevel(logging.WARNING)
+logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
+logger.setLevel(logging.WARNING)
 
 
 def upload_candidates_data(uploaded_data):
@@ -29,7 +29,7 @@ def upload_candidates_data(uploaded_data):
     ambigous_candidates = 0
     for row in df.iterrows():
         candidate = {}
-        cf = row[1]['Codice Fiscale']
+        cf = row[1]['Codice Fiscale'].upper()
         candidates = list(client.get_candidate_by_cf(cf))
 
         if len(candidates) == 1:
@@ -56,8 +56,8 @@ def upload_evalations_data(uploaded_data):
     df = pd.read_excel(file)
     df.fillna("", inplace=True)
     for row in df.iterrows():
-        candidates = list(cosmos_client.get_candidate_by_cf(
-            row[1]['CodiceFiscale']))
+        cf = row[1]['CodiceFiscale'].upper()
+        candidates = list(cosmos_client.get_candidate_by_cf(cf))
         if candidates != []:
             candidate = candidates[0]
             candidate["Matricola"] = row[1]['Matricola']
@@ -86,8 +86,10 @@ def upload_seniority_data(uploaded_data):
             if candidate != {}:
                 client.put_candidate(candidate)
             candidate = {}
-            candidate["id"] = str(uuid.uuid4())
-            candidate['CodiceFiscale'] = row[1]['CodiceFiscale']
+            cf = row[1]['CodiceFiscale'].upper()
+            # candidate["id"] = str(uuid.uuid4())
+            candidate["id"] = cf
+            candidate['CodiceFiscale'] = cf
             candidate['Matricola'] = row[1]['Matricola']
             candidate['Cognome'] = row[1]['Cognome']
             candidate['Nome'] = row[1]['Nome']
@@ -97,8 +99,7 @@ def upload_seniority_data(uploaded_data):
             candidate['Posizione Giuridica attuale'] = row[1]['Posizione Giuridica attuale']
             candidate['Qualifica'] = row[1]['Qualifica']
             candidate['NConcorso'] = row[1]['NConcorso']
-            candidate['Data assunzione'] = row[1]['Data assunzione'].strftime(
-                '%Y-%m-%d')
+            candidate['Data assunzione'] = row[1]['Data assunzione'].strftime('%Y-%m-%d')
             candidate['Cod Livello attuale'] = row[1]['Cod Livello attuale']
             candidate['Storia Rapporto Lavorativo'] = []
         else:
@@ -125,32 +126,48 @@ def check_deployment():
         st.error(traceback.format_exc())
 
 
+def on_setting_change():
+    st.session_state['settings_changed'] = True
+
+
+def save_users():
+
+    try:
+        if st.session_state['settings_changed'] is False:
+            st.error("Nessuna modifica da salvare")
+        else:
+            cosmos_client = AzureCosmosDBClient()
+            users = cosmos_client.get_users()
+            for user in users:
+                user["role"] = "Admin" if st.session_state[user.get(
+                    "id")+"_role"] else "User"
+                user["profiles"] = st.session_state[user.get(
+                    "id") + "_profiles"]
+                cosmos_client.put_user(
+                    user['id'], user['name'], user['role'], user['profiles'])
+            st.session_state['settings_changed'] = False
+            st.success("Salvataggio Completato")
+    except Exception as e:
+        error_string = traceback.format_exc()
+        st.error(error_string)
+        logger.error(error_string)
+
+
 try:
+    if "settings_changed" not in st.session_state:
+        st.session_state["settings_changed"] = False
     cosmos_client = AzureCosmosDBClient()
     st.set_page_config(layout="wide")
     StreamlitHelper.hide_footer()
 
-    #user = SessionHelper.get_current_user()
-
-    # if user.get_role() != "Admin":
-    #     st.error("Non sei autorizzato ad accedere a questa pagina")
-    # else:
     st.title("Impostazioni HR Assistant Open AI")
     with st.expander("Impostazioni LLM", expanded=False):
         llm_helper = LLMHelper()
-
-        # col1, col2, col3 = st.columns([1,2,1])
-        # with col1:
-        #     st.write("")
-        #     #st.image(os.path.join('images','citta-metropolitana-roma-capitale-logo.png'))
-        # with col3:
-
         st.session_state["token_response"] = st.slider(
-            "Tokens response length", 100, 1500, 1000)
+            "Tokens response length", 500, 1500, 1000)
         st.session_state["temperature"] = st.slider(
             "Temperature", 0.0, 1.0, 0.7)
         st.button("Controllo Deployment", on_click=check_deployment)
-
     with st.expander("Dati Supporto", expanded=False):
         st.markdown("### Dati Caricati")
         employees_count = cosmos_client.get_candidates_with_candidacy_count()
@@ -199,31 +216,6 @@ try:
                     st.success("Caricamento completato")
                 except Exception as e:
                     st.error(traceback.format_exc())
-    # with st.expander('Gestione Utenti', expanded=False):
-
-    #     users = cosmos_client.get_users()
-
-    #     colms = st.columns([1, 1, 1, 1])
-
-    #     fields = ['Id',
-    #                 'Nome',
-    #                 'Admin',
-    #                 'Profiles']
-
-    #     for col, field_name in zip(colms, fields):
-    #         # header
-    #         col.write(field_name)
-
-    #     for user in users:
-    #         col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
-    #         col2.write(user.get("name"))
-    #         col1.write(user.get("id"))
-    #         col3.toggle(' ', value=user.get("role") ==
-    #                     "Admin", key=user.get("id"))
-    #         col4.multiselect(' ', options=['HR', 'Manager', 'Employee'], default=user.get(
-    #             "profiles"),label_visibility='collapsed')
-    #     # users_df = pd.DataFrame(users)
-    #     # st.dataframe(users_df)
-
+    
 except:
     st.error(traceback.format_exc())
