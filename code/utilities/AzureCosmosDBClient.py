@@ -93,7 +93,8 @@ class AzureCosmosDBClient:
         return count
 
     def get_candidate_by_cf(self, cf):
-        query = f"SELECT * FROM candidates c WHERE c.CodiceFiscale = '{cf}'"
+        cf = cf.upper()
+        query = f"SELECT * FROM candidates c WHERE UPPER(c.CodiceFiscale) = '{cf}'"
         items = self.candidates.query_items(
             query=query, enable_cross_partition_query=True)
         return items
@@ -116,7 +117,9 @@ class AzureCosmosDBClient:
         return items
         
     def get_candidate_by_name_and_surname(self, name, surname):
-        query = f"SELECT * FROM candidates c WHERE c.Nome = '{name}' AND c.Cognome = '{surname}'"
+        name = name.lower()
+        surname = surname.lower()
+        query = f"SELECT * FROM candidates c WHERE LOWER(c.Nome) = '{name}' AND LOWER(c.Cognome) = '{surname}'"
         items = self.candidates.query_items(
             query=query, enable_cross_partition_query=True)
         return items

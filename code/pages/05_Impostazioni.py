@@ -29,7 +29,7 @@ def upload_candidates_data(uploaded_data):
     ambigous_candidates = 0
     for row in df.iterrows():
         candidate = {}
-        cf = row[1]['Codice Fiscale']
+        cf = row[1]['Codice Fiscale'].upper()
         candidates = list(client.get_candidate_by_cf(cf))
 
         if len(candidates) == 1:
@@ -56,8 +56,8 @@ def upload_evalations_data(uploaded_data):
     df = pd.read_excel(file)
     df.fillna("", inplace=True)
     for row in df.iterrows():
-        candidates = list(cosmos_client.get_candidate_by_cf(
-            row[1]['CodiceFiscale']))
+        cf = row[1]['CodiceFiscale'].upper()
+        candidates = list(cosmos_client.get_candidate_by_cf(cf))
         if candidates != []:
             candidate = candidates[0]
             candidate["Matricola"] = row[1]['Matricola']
@@ -86,8 +86,10 @@ def upload_seniority_data(uploaded_data):
             if candidate != {}:
                 client.put_candidate(candidate)
             candidate = {}
-            candidate["id"] = str(uuid.uuid4())
-            candidate['CodiceFiscale'] = row[1]['CodiceFiscale']
+            cf = row[1]['CodiceFiscale'].upper()
+            # candidate["id"] = str(uuid.uuid4())
+            candidate["id"] = cf
+            candidate['CodiceFiscale'] = cf
             candidate['Matricola'] = row[1]['Matricola']
             candidate['Cognome'] = row[1]['Cognome']
             candidate['Nome'] = row[1]['Nome']
@@ -97,8 +99,7 @@ def upload_seniority_data(uploaded_data):
             candidate['Posizione Giuridica attuale'] = row[1]['Posizione Giuridica attuale']
             candidate['Qualifica'] = row[1]['Qualifica']
             candidate['NConcorso'] = row[1]['NConcorso']
-            candidate['Data assunzione'] = row[1]['Data assunzione'].strftime(
-                '%Y-%m-%d')
+            candidate['Data assunzione'] = row[1]['Data assunzione'].strftime('%Y-%m-%d')
             candidate['Cod Livello attuale'] = row[1]['Cod Livello attuale']
             candidate['Storia Rapporto Lavorativo'] = []
         else:
@@ -130,7 +131,7 @@ def on_setting_change():
 
 
 def save_users():
-    
+
     try:
         if st.session_state['settings_changed'] is False:
             st.error("Nessuna modifica da salvare")
@@ -140,7 +141,8 @@ def save_users():
             for user in users:
                 user["role"] = "Admin" if st.session_state[user.get(
                     "id")+"_role"] else "User"
-                user["profiles"] = st.session_state[user.get("id") + "_profiles"]
+                user["profiles"] = st.session_state[user.get(
+                    "id") + "_profiles"]
                 cosmos_client.put_user(
                     user['id'], user['name'], user['role'], user['profiles'])
             st.session_state['settings_changed'] = False
@@ -242,7 +244,8 @@ try:
 
                 col4.multiselect(' ', options=profiles_description, default=user.get(
                     "profiles"), label_visibility='collapsed', on_change=on_setting_change, key=user.get("id") + "_profiles")
-            st.button("Salva", disabled=not st.session_state['settings_changed'], on_click=save_users)
+            st.button(
+                "Salva", disabled=not st.session_state['settings_changed'], on_click=save_users)
 
 except:
     st.error(traceback.format_exc())
