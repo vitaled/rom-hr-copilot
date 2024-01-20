@@ -5,8 +5,6 @@ DEFAULT_ROLE = 'User'
 
 class SessionHelper:
 
-    
-
     @staticmethod
     def get_current_user():
         headers = _get_websocket_headers()
