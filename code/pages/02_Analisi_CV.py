@@ -1,4 +1,4 @@
-import logging as logger
+import logging
 import streamlit as st
 import os
 import re
@@ -16,6 +16,8 @@ import io
 from utilities.StreamlitHelper import StreamlitHelper
 from utilities.AzureCosmosDBClient import AzureCosmosDBClient
 
+logger = logging.getLogger(
+    'azure.core.pipeline.policies.http_logging_policy').setLevel(logging.WARNING)
 
 def reset(profile, resume):
 
