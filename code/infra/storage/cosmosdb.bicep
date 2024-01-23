@@ -77,7 +77,7 @@ resource sqlRoleAssignment 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignm
   }
 }
 
-var containerNames = ['analyses', 'candidates', 'profiles', 'resumes', 'users']
+var containerNames = ['analyses', 'candidates', 'profiles', 'resumes', 'users','uploadruns']
 
 resource sqlContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-04-15' = [for (containerName, i) in containerNames: {
   parent: sqlDatabase

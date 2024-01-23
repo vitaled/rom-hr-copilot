@@ -15,6 +15,8 @@ from utilities.SessionHelper import SessionHelper
 logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
 logger.setLevel(logging.WARNING)
 
+logger = logging.getLogger(
+    'azure.core.pipeline.policies.http_logging_policy').setLevel(logging.WARNING)
 
 def reset(profile, resume):
 
