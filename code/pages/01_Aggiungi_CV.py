@@ -123,7 +123,7 @@ try:
                 import subprocess
                 p = subprocess.Popen([
                     'python',
-                    '../code/scripts/batchCVUploads.py',
+                    './scripts/batchCVUploads.py',
                     '--folder', temp_dir,
                     '--parallelism', str(2)
                 ])
