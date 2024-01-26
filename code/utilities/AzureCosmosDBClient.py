@@ -32,8 +32,9 @@ class AzureCosmosDBClient:
         self.analyses_runs = self.database.get_container_client('analysesruns')
 
     def delete_resumes(self):
-        query = "SELECT id FROM resumes r"
-        items = self.resumes.query_items(query=query, enable_cross_partition_query=True)
+        query = "SELECT * FROM resumes r"
+        items = self.resumes.query_items(
+            query=query, enable_cross_partition_query=True)
         for item in items:
             self.resumes.delete_item(item['id'], item['id'])
         # Get all the elements and delete them one by one
@@ -41,13 +42,14 @@ class AzureCosmosDBClient:
         # # Recreate the container
         # self.resumes = self.database.create_container_if_not_exists(
         #     id='resumes', partition_key=PartitionKey(path="/id"))
-    
+
     def delete_candidate_by_id(self, id):
         self.candidates.delete_item(id, id)
 
     def delete_candidates(self):
-        query = "SELECT id FROM candidates c"
-        items = self.candidates.query_items(query=query, enable_cross_partition_query=True)
+        query = "SELECT * FROM candidates c"
+        items = self.candidates.query_items(
+            query=query, enable_cross_partition_query=True)
         for item in items:
             self.candidates.delete_item(item['id'], item['id'])
 
@@ -55,22 +57,24 @@ class AzureCosmosDBClient:
         # # Recreate the container
         # self.candidates = self.database.create_container_if_not_exists(
         #     id='candidates', partition_key=PartitionKey(path="/id"))
-        
+
     def delete_analyses(self):
-        query = "SELECT id FROM analyses a"
-        items = list(self.analyses.query_items(query=query, enable_cross_partition_query=True))
+        query = "SELECT * FROM analyses a"
+        items = self.analyses.query_items(
+            query=query, enable_cross_partition_query=True)
+        
         for item in items:
             self.analyses.delete_item(item['id'], item['id'])
-
 
         # self.database.delete_container('analyses')
         # # Recreate the container
         # self.analyses = self.database.create_container_if_not_exists(
         #     id='analyses', partition_key=PartitionKey(path="/id"))
-        
+
     def delete_upload_runs(self):
-        query = "SELECT id FROM uploadruns u"
-        items = self.upload_runs.query_items(query=query, enable_cross_partition_query=True)
+        query = "SELECT * FROM uploadruns u"
+        items = self.upload_runs.query_items(
+            query=query, enable_cross_partition_query=True)
         for item in items:
             self.upload_runs.delete_item(item['id'], item['id'])
 
@@ -78,10 +82,11 @@ class AzureCosmosDBClient:
         # # Recreate the container
         # self.upload_runs = self.database.create_container_if_not_exists(
         #     id='uploadruns', partition_key=PartitionKey(path="/id"))
-    
+
     def delete_analyses_runs(self):
-        query = "SELECT id FROM analysesruns a"
-        items = self.analyses_runs.query_items(query=query, enable_cross_partition_query=True)
+        query = "SELECT * FROM analysesruns a"
+        items = self.analyses_runs.query_items(
+            query=query, enable_cross_partition_query=True)
         for item in items:
             self.analyses_runs.delete_item(item['id'], item['id'])
 
@@ -89,19 +94,19 @@ class AzureCosmosDBClient:
         # # Recreate the container
         # self.analyses_runs = self.database.create_container_if_not_exists(
         #     id='analysesruns', partition_key=PartitionKey(path="/id"))
-    
+
     def delete_users(self):
         self.database.delete_container('users')
         # Recreate the container
         self.users = self.database.create_container_if_not_exists(
             id='users', partition_key=PartitionKey(path="/id"))
-        
+
     def delete_profiles(self):
         self.database.delete_container('profiles')
         # Recreate the container
         self.profiles = self.database.create_container_if_not_exists(
             id='profiles', partition_key=PartitionKey(path="/id"))
-    
+
     def put_analysis(self, analysis):
         self.analyses.upsert_item(analysis)
 
@@ -113,7 +118,8 @@ class AzureCosmosDBClient:
 
     def get_analysis_by_candidate_id_and_profile(self, candidate_id, profile_id):
         query = f"SELECT * FROM analyses a WHERE a.CandidateId = '{candidate_id}' AND a.ProfileId = '{profile_id}'"
-        items = self.analyses.query_items(query=query, enable_cross_partition_query=True)
+        items = self.analyses.query_items(
+            query=query, enable_cross_partition_query=True)
         return items
 
     def delete_analysis_by_candidate_id_and_profile(self, candidate_id, profile_id):
@@ -125,7 +131,7 @@ class AzureCosmosDBClient:
     def put_candidate(self, candidate):
         self.candidates.upsert_item(candidate)
 
-    def get_candidates(self,offset=0,limit=1000):
+    def get_candidates(self, offset=0, limit=1000):
         query = f"SELECT * FROM candidates c OFFSET {offset} LIMIT {limit}"
         items = self.candidates.query_items(
             query=query, enable_cross_partition_query=True)
@@ -344,7 +350,6 @@ class AzureCosmosDBClient:
             query=query,
             enable_cross_partition_query=True)
         return items
-
 
     # Analyses Runs
 
