@@ -28,7 +28,7 @@ def batch_analysis(profile):
     
     import subprocess
     command_line = [
-        f"{sys.executable} ",
+        f"python",
         './scripts/batchCVAnalyses.py',
         '--temperature', str(arg_temperature),
         '--max-tokens', str(arg_max_tokens),
