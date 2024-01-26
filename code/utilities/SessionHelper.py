@@ -10,9 +10,9 @@ class SessionHelper:
         headers = _get_websocket_headers()
         print(headers)
         principal_name = headers.get(
-            'x-ms-client-principal-name', 'dvitale@microsoft.com')
+            'X-Ms-Client-Principal-Name', 'dvitale@microsoft.com')
         principal_id = headers.get(
-            'x-ms-client-principal-id', 'cff054a1-bb8a-4e05-9218-9f3846d14ad8')
+            'X-Ms-Client-Principal-Id', 'cff054a1-bb8a-4e05-9218-9f3846d14ad8')
 
         user = User.get_user(principal_id)
 
