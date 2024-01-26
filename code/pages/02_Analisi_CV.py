@@ -36,7 +36,6 @@ def batch_analysis(profile):
         '--ids', arg_ids
     ]
     p = subprocess.Popen(command_line,stdout=PIPE,stderr=STDOUT,shell=True)
-    sleep(1)
     st.toast("Processo di analisi CV iniziato")
 
 def add_to_selection(resume_id):
