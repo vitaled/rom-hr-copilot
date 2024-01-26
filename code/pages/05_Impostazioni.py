@@ -264,9 +264,7 @@ try:
                     cosmos_client.delete_analyses()
                     cosmos_client.delete_candidates()
                     cosmos_client.delete_resumes()
-
                     st.success("Tutti i dati sono stati eliminati")
-                    st.rerun()
                 except Exception as e:
                     st.error(traceback.format_exc())
                     st.error("Errore nell'eliminazione dei dati"+str(e))
@@ -276,7 +274,6 @@ try:
                     cosmos_client.delete_analyses_runs()
                     cosmos_client.delete_upload_runs()
                     st.success("Tutti i dati relativi ai run di caricamento e analisi sono stati eliminati")
-                    st.rerun()
                 except Exception as e:
                     st.error(traceback.format_exc())
                     st.error("Errore nell'eliminazione dei logs"+str(e))
