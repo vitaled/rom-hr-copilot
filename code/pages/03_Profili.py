@@ -62,13 +62,15 @@ try:
         profile = list(cosmos_client.get_profile_by_id(profile))[0]
         st.session_state["current_profile"] = profile
         for prompt in profile['prompts']:
-            tab_text, tab_markdown = st.tabs(
-                ["Testo Prompt", "Preview Markdown"])
-            with tab_text:
-                st.session_state[prompt['description']] = st.text_area(
-                    label=prompt['description'], value=prompt['text'], height=300)
-            with tab_markdown:
-                st.markdown(st.session_state[prompt['description']])
+            with st.expander(prompt['description']):
+                #st.markdown(prompt['text'])
+                tab_text, tab_markdown = st.tabs(   
+                    ["Testo Prompt", "Preview Markdown"])
+                with tab_text:
+                    st.session_state[prompt['description']] = st.text_area(
+                        label=prompt['description'], value=prompt['text'], height=300)
+                with tab_markdown:
+                    st.markdown(st.session_state[prompt['description']])
 
         st.button(label="Salvataggio Prompt",
                   disabled=False, on_click=salvataggio)

@@ -26,6 +26,12 @@ def upload_cv(cv_path, upload_id):
 
         # Set upload run status to running
         cosmos_db.set_upload_run_running(upload_id)
+        
+        # extract Codice Fiscale from cv_path
+        file_name = os.path.basename(cv_path)
+        cf = file_name.split('.')[0]
+        
+        candidate = list(cosmos_db.get_candidate_by_cf(cf))[0]
 
         with open(cv_path, "rb") as f:
             cv = io.BytesIO(f.read())
@@ -52,6 +58,8 @@ def upload_cv(cv_path, upload_id):
                 "text": cv_text,
             })
             # Set upload run status to completed
+            candidate['resume_id']=file_hash
+            cosmos_db.put_candidate(candidate)
             cosmos_db.set_upload_run_completed(upload_id)
 
     except Exception as e:

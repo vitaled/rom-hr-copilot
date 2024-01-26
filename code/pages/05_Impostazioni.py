@@ -33,10 +33,20 @@ def upload_candidates_data(uploaded_data):
         candidates = list(client.get_candidate_by_cf(cf))
 
         if len(candidates) == 1:
-            # Create a ner candidate
+            # Create a new candidate
             candidate = candidates[0]
             for col in df.columns:
                 candidate[col] = row[1][col]
+
+#Candidatura 1:	Candidatura 2
+#FUNZIONARIO AMMINISTRATIVO – COD. FA13	FUNZIONARIO AMMINISTRATIVO – COD. FA13
+            candidate["candidature"] = []
+
+            if "Candidatura 1:" in candidate and candidate["Candidatura 1:"] != "":
+                candidate["candidature"].append(candidate["Candidatura 1:"])
+            
+            if "Candidatura 2" in candidate and candidate["Candidatura 2"] != "":
+                candidate["candidature"].append(candidate["Candidatura 2"])
 
             client.put_candidate(candidate)
             inserted_candidate += 1
@@ -58,10 +68,14 @@ def upload_evalations_data(uploaded_data):
     for row in df.iterrows():
         cf = row[1]['CodiceFiscale'].upper()
         candidates = list(cosmos_client.get_candidate_by_cf(cf))
+        candiate ={}
         if candidates != []:
             candidate = candidates[0]
-            candidate["Matricola"] = row[1]['Matricola']
-            candidate["Valutazioni"] = {
+        else:
+            candidate['CodiceFiscale']=cf
+        
+        candidate["Matricola"] = row[1]['Matricola']
+        candidate["Valutazioni"] = {
                 'III2020':  row[1]['III2020'],
                 'IV2020': row[1]['IV2020'],
                 'I2021': row[1]['I2021'],
@@ -70,8 +84,8 @@ def upload_evalations_data(uploaded_data):
                 'II2022': row[1]['II2022'],
                 'I2023': row[1]['I2023']
             }
-            cosmos_client.put_candidate(candidate)
-
+        cosmos_client.put_candidate(candidate)
+    st.success("Caricamento completato")
 
 def upload_seniority_data(uploaded_data):
     logging.info("Caricamento dati anzianità")
@@ -80,14 +94,13 @@ def upload_seniority_data(uploaded_data):
     df = pd.read_excel(file)
     df.fillna("", inplace=True)
     candidate = {}
-    print(df)
     for row in df.iterrows():
         if row[1]['Storico cod livello'] == 'LIVELLO ATTUALE':
             if candidate != {}:
                 client.put_candidate(candidate)
             candidate = {}
             cf = row[1]['CodiceFiscale'].upper()
-            # candidate["id"] = str(uuid.uuid4())
+
             candidate["id"] = cf
             candidate['CodiceFiscale'] = cf
             candidate['Matricola'] = row[1]['Matricola']
@@ -129,9 +142,7 @@ def check_deployment():
 def on_setting_change():
     st.session_state['settings_changed'] = True
 
-
 def save_users():
-
     try:
         if st.session_state['settings_changed'] is False:
             st.error("Nessuna modifica da salvare")
@@ -246,6 +257,28 @@ try:
                     "profiles"), label_visibility='collapsed', on_change=on_setting_change, key=user.get("id") + "_profiles")
             st.button(
                 "Salva", disabled=not st.session_state['settings_changed'], on_click=save_users)
+        with st.expander("Danger Zone", expanded=False):
+            st.markdown("### Elimina Dati")
+            if st.button("Elimina Dati"):
+                try:
+                    cosmos_client.delete_analyses()
+                    cosmos_client.delete_candidates()
+                    cosmos_client.delete_resumes()
 
+                    st.success("Tutti i dati sono stati eliminati")
+                    st.rerun()
+                except Exception as e:
+                    st.error(traceback.format_exc())
+                    st.error("Errore nell'eliminazione dei dati"+str(e))
+            
+            if st.button("Elimina Logs"):
+                try: 
+                    cosmos_client.delete_analyses_runs()
+                    cosmos_client.delete_upload_runs()
+                    st.success("Tutti i dati relativi ai run di caricamento e analisi sono stati eliminati")
+                    st.rerun()
+                except Exception as e:
+                    st.error(traceback.format_exc())
+                    st.error("Errore nell'eliminazione dei logs"+str(e))
 except:
     st.error(traceback.format_exc())

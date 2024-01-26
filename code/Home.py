@@ -3,7 +3,7 @@ from streamlit.web.server.websocket_headers import _get_websocket_headers
 from streamlit.web.server.server import Server
 from utilities.StreamlitHelper import StreamlitHelper
 # from utilities.SessionHelper import SessionHelper
-import logging
+
 from utilities.LLMHelper import LLMHelper
 import traceback
 import os
@@ -15,15 +15,13 @@ from st_pages import Page, show_pages, add_page_title
 import streamlit as st
 import os
 import traceback
-from utilities.LLMHelper import LLMHelper
 import logging
 from utilities.StreamlitHelper import StreamlitHelper
 from utilities.SessionHelper import SessionHelper
 
-logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
-logger.setLevel(logging.WARNING)
+logger = logging.getLogger("CMRCVLog")#'azure.core.pipeline.policies.http_logging_policy')
+logger.setLevel(logging.INFO)
 try:
-    
     st.set_page_config(layout="wide")
     StreamlitHelper.hide_footer()
     st.title("HR Assistant Open AI")
