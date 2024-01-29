@@ -36,22 +36,32 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
         cosmos_client.set_analysis_run_running(analysis_id)
 
         analysis = None
-        candidate = list(
-            cosmos_client.get_candidates_by_resume_id(resume_id))[0]
-        candidate_id = candidate["id"]
+        candidate_source = list(cosmos_client.get_candidates_by_resume_id(resume_id))[0]
+        
+        candidate = {}
+        candidate['id'] = candidate_source['id']
+        candidate['Nome'] = candidate_source[profile_id]['Nome']
+        candidate['Cognome'] = candidate_source[profile_id]['Cognome']
+        candidate['Valutazioni'] = candidate_source['Valutazioni']
+        candidate['Storia Rapporto Lavorativo'] = candidate_source['Storia Rapporto Lavorativo']
+        candidate['access_title'] = candidate_source[profile_id]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
+        candidate['access_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
+        candidate['other_titles'] = candidate_source[profile_id]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
+        candidate['other_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+        candidate['resume_id'] = candidate_source['resume_id']
+
+
         analyses_query = cosmos_client.get_analysis_by_candidate_id_and_profile(
-            candidate_id=candidate_id,
+            candidate_id=candidate['id'],
             profile_id=profile_id)
 
         analyses = list(analyses_query)
         cv_text = None
         total_score = 0
         if len(analyses) == 1:
-            print("CV già analizzato... skipping")
             logger.info("CV già analizzato... skipping")
             cosmos_client.set_analysis_run_completed(analysis_id)
         else:
-            print("CV non ancora analizzato")
             logger.info("CV non ancora analizzato")
             logger.info(f"Get profile: {profile_id}")
             prompts = list(cosmos_client.get_profile_by_id(profile_id))[
@@ -92,24 +102,13 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
 
                 evaluation_table = evaluation_table.to_markdown()
 
-                prompt_text = prompt_text.replace('{risultati_valutazioni}',
-                                                  evaluation_table)
+                prompt_text = prompt_text.replace('{risultati_valutazioni}', evaluation_table)
 
-                access_title = candidate["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
-                prompt_text = prompt_text.replace('{titolo_accesso}',
-                                                  access_title)
-
-                access_title_info = candidate["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
-                prompt_text = prompt_text.replace('{dettagli_titolo_accesso}',
-                                                  access_title_info)
-
-                other_titles = candidate["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
-                prompt_text = prompt_text.replace('{altri_titoli}',
-                                                  other_titles)
-
-                other_title_info = candidate["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
-                prompt_text = prompt_text.replace('{dettagli_altri_titoli}',
-                                                  other_title_info)
+                prompt_text = prompt_text.replace('{titolo_accesso}', candidate['access_title'])
+                prompt_text = prompt_text.replace('{dettagli_titolo_accesso}', candidate['access_title_info'])
+                prompt_text = prompt_text.replace('{altri_titoli}', candidate['other_titles'])
+                prompt_text = prompt_text.replace('{dettagli_altri_titoli}', candidate['other_title_info'])
+                
                 logger.info(f"Computing prompt: "+prompt['description'])
                 prompt['output'] = llm_helper.get_hr_completion(prompt_text)
                 score = re.findall(r"Punteggio: (\d+)", prompt["output"])

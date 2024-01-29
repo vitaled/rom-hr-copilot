@@ -35,18 +35,32 @@ def upload_candidates_data(uploaded_data):
         if len(candidates) == 1:
             # Create a new candidate
             candidate = candidates[0]
-            for col in df.columns:
-                candidate[col] = row[1][col]
+            # for col in df.columns:
+            #     candidate[col] = row[1][col]
+            #Candidatura 1:	Candidatura 2
+            # e.g:
+            # FUNZIONARIO AMMINISTRATIVO – COD. FA13	
+            # FUNZIONARIO AMMINISTRATIVO – COD. FA13
 
-#Candidatura 1:	Candidatura 2
-#FUNZIONARIO AMMINISTRATIVO – COD. FA13	FUNZIONARIO AMMINISTRATIVO – COD. FA13
-            candidate["candidature"] = []
-
-            if "Candidatura 1:" in candidate and candidate["Candidatura 1:"] != "":
-                candidate["candidature"].append(candidate["Candidatura 1:"])
             
-            if "Candidatura 2" in candidate and candidate["Candidatura 2"] != "":
-                candidate["candidature"].append(candidate["Candidatura 2"])
+
+            if "candidature" not in candidate:
+                candidate["candidature"] = []
+
+            if "Candidatura 1:" in row[1] and row[1]["Candidatura 1:"] != "":
+                candidate["candidature"].append(row[1]["Candidatura 1:"])
+                candidacy = {}
+                for col in df.columns:
+                    candidacy[col] = row[1][col]
+                candidate[row[1]["Candidatura 1:"]] = candidacy
+
+            if "Candidatura 2" in row[1] and row[1]["Candidatura 2"] != "":
+                candidate["candidature"].append(row[1]["Candidatura 2"])
+                candidacy = {}
+                for col in df.columns:
+                    candidacy[col] = row[1][col]
+                candidate[row[1]["Candidatura 2"]] = candidacy
+
 
             client.put_candidate(candidate)
             inserted_candidate += 1

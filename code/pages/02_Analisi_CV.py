@@ -15,7 +15,8 @@ from utilities.StreamlitHelper import StreamlitHelper
 from utilities.AzureCosmosDBClient import AzureCosmosDBClient
 from utilities.SessionHelper import SessionHelper
 from time import sleep
-logger = logging.getLogger()#'azure.core.pipeline.policies.http_logging_policy')
+# 'azure.core.pipeline.policies.http_logging_policy')
+logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
 
 
@@ -25,7 +26,7 @@ def batch_analysis(profile):
     arg_temperature = st.session_state["temperature"]
     arg_max_tokens = st.session_state["token_response"]
     arg_profile = profile
-    
+
     import subprocess
     command_line = [
         f"python",
@@ -35,8 +36,11 @@ def batch_analysis(profile):
         '--profile', arg_profile,
         '--ids', arg_ids
     ]
-    p = subprocess.Popen(command_line,stdout=PIPE,stderr=STDOUT,shell=False)
+    # p = subprocess.Popen(command_line,stdout=PIPE,stderr=STDOUT,shell=True)
+    p = subprocess.Popen(command_line)
+
     st.toast("Processo di analisi CV iniziato")
+
 
 def add_to_selection(resume_id):
     if 'selected_resumes' not in st.session_state:
@@ -101,6 +105,19 @@ def get_analysis(profile, resume):
 
 def analyze(profile, resume):
     try:
+
+        candidate = {}
+        candidate['id'] = resume['id']
+        candidate['Nome'] = resume[profile]['Nome']
+        candidate['Cognome'] = resume[profile]['Cognome']
+        candidate['Valutazioni'] = resume['Valutazioni']
+        candidate['Storia Rapporto Lavorativo'] = resume['Storia Rapporto Lavorativo']
+        candidate['access_title'] = resume[profile]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
+        candidate['access_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
+        candidate['other_titles'] = resume[profile]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
+        candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+        candidate['resume_id'] = resume['resume_id']
+
         cosmos_client = AzureCosmosDBClient()
         client = AzureBlobStorageClient()
 
@@ -108,9 +125,9 @@ def analyze(profile, resume):
 
         analysis = None
         logger.info("Cercando analisi già eseguita per il candidato " +
-                    resume['id']+" e il profilo "+profile)
+                    candidate['id']+" e il profilo "+profile)
         analyses_query = cosmos_client.get_analysis_by_candidate_id_and_profile(
-            candidate_id=resume['id'], profile_id=profile)
+            candidate_id=candidate['id'], profile_id=profile)
         logger.info(analyses_query)
         analyses = list(analyses_query)
         cv_text = None
@@ -124,11 +141,13 @@ def analyze(profile, resume):
             total_score = 0
             logger.info("CV non ancora analizzato")
             progress_bar.progress(10, text="Recupero CV")
-            cv = client.download_blob_to_bytes("resumes", resume['resume_id']+".pdf")
-            prompts = list(cosmos_client.get_profile_by_id(profile))[0]['prompts']
+            cv = client.download_blob_to_bytes(
+                "resumes", candidate['resume_id']+".pdf")
+            prompts = list(cosmos_client.get_profile_by_id(profile))[
+                0]['prompts']
             progress_bar.progress(20, text="Recupero Estrazione Testo")
             cv_text = list(cosmos_client.get_resume_by_id(
-                resume['resume_id']))[0]['text']
+                candidate['resume_id']))[0]['text']
 
             llm_helper = LLMHelper(
                 temperature=st.session_state["temperature"], max_tokens=st.session_state["token_response"])
@@ -138,13 +157,13 @@ def analyze(profile, resume):
                 prompt_text = prompt["text"]
                 prompt_text = prompt_text.replace('{cv}', cv_text)
 
-                history_table = resume['Storia Rapporto Lavorativo']
+                history_table = candidate['Storia Rapporto Lavorativo']
 
                 history_table = pd.DataFrame(history_table)
                 history_table = history_table.to_markdown()
                 prompt_text = prompt_text.replace(
                     '{storia_professionale}', history_table)
-                evaluation_table = resume['Valutazioni']
+                evaluation_table = candidate['Valutazioni']
                 evaluation_table = pd.DataFrame(evaluation_table, index=[0])
 
                 # Reset the index
@@ -160,21 +179,16 @@ def analyze(profile, resume):
                 prompt_text = prompt_text.replace(
                     '{risultati_valutazioni}', evaluation_table)
 
-                access_title = resume["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
                 prompt_text = prompt_text.replace(
-                    '{titolo_accesso}', access_title)
+                    '{titolo_accesso}', candidate['access_title'])
 
-                access_title_info = resume["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
                 prompt_text = prompt_text.replace(
-                    '{dettagli_titolo_accesso}', access_title_info)
+                    '{dettagli_titolo_accesso}', candidate['access_title_info'])
 
-                other_titles = resume["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
                 prompt_text = prompt_text.replace(
-                    '{altri_titoli}', other_titles)
-
-                other_title_info = resume["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+                    '{altri_titoli}', candidate['other_titles'])
                 prompt_text = prompt_text.replace(
-                    '{dettagli_altri_titoli}', other_title_info)
+                    '{dettagli_altri_titoli}', candidate['other_title_info'])
 
                 prompt['output'] = llm_helper.get_hr_completion(prompt_text)
                 score = re.findall(r"Punteggio: (\d+)", prompt["output"])
@@ -190,7 +204,7 @@ def analyze(profile, resume):
             analysis = {
                 "id": str(uuid.uuid4()),
                 "AnalysisId": str(uuid.uuid4()),
-                "CandidateId": resume['id'],
+                "CandidateId": candidate['id'],
                 "ProfileId": profile,
                 "Analysis": json.dumps(prompts),
                 "Text": cv_text,
@@ -199,7 +213,7 @@ def analyze(profile, resume):
             cosmos_client.put_analysis(analysis)
         progress_bar.progress(100, text="Analisi completata")
         progress_bar.empty()
-        st.session_state['analysis_'+resume['resume_id']] = prompts
+        st.session_state['analysis_'+candidate['resume_id']] = prompts
     except Exception as e:
         error_string = traceback.format_exc()
         st.error(error_string)
@@ -265,8 +279,8 @@ try:
 
         col1.checkbox("", key='selected_'+resume['resume_id'],
                       on_change=add_to_selection, args=(resume['resume_id'],))
-        col2.write(resume['Nome'])  # Nome
-        col3.write(resume['Cognome'])  # Cognome
+        col2.write(resume[profile]['Nome'])  # Nome
+        col3.write(resume[profile]['Cognome'])  # Cognome
         # Valutazione Presente
         col4.write('Sì' if 'Valutazioni' in resume else 'No')
         # Anzianità Presente

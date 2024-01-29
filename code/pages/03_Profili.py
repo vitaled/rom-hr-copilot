@@ -14,7 +14,23 @@ from utilities.AzureCosmosDBClient import AzureCosmosDBClient
 from utilities.SessionHelper import SessionHelper
 logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
 logger.setLevel(logging.WARNING)
+import json
 
+def export_profiles():
+    try:
+        logger.info("Esportazione profili")
+        cosmos_client = AzureCosmosDBClient()
+        profiles = list(cosmos_client.get_profiles())
+        # return json in utf8 
+        return json.dumps(profiles,ensure_ascii=False).encode('utf8') 
+        
+        
+        #return json.dumps(profiles)
+        
+    except Exception as e:
+        error_string = traceback.format_exc()
+        st.error(error_string)
+        logger.error(error_string)
 
 def read_file(file: str):
     with open(os.path.join('prompts', file), 'r', encoding='utf-8') as file:
@@ -74,6 +90,10 @@ try:
 
         st.button(label="Salvataggio Prompt",
                   disabled=False, on_click=salvataggio)
+        
+
+        st.download_button(label="Esporta profili in formato JSON",data=export_profiles(),file_name="profiles.json")
+        
     else:
         st.warning("Non hai accesso a nessun profilo di selezione")
 
