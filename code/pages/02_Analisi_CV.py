@@ -64,7 +64,7 @@ def reset(profile, resume):
     st.rerun()
 
 
-def print_analysis(analysis):
+def print_analysis(analysis,candidate_id,profile_id):
     text = ""
     for prompt in analysis:
         score = re.findall(r"Punteggio: (\d+)", prompt["output"])
@@ -79,7 +79,8 @@ def print_analysis(analysis):
             st.markdown(prompt["output"])
         text = text + prompt["description"] + \
             " "+score+"\n"+prompt["output"]+"\n\n"
-    st.download_button("Scarica analisi", text, "analysis.txt", "txt")
+    st.download_button("Scarica analisi", text, "analysis_"+candidate_id+"_"+profile_id+".txt", "txt",key="download_analysis_"+candidate_id+"_"+profile_id)
+    #st.download_button("Scarica analisi", text, "analysis.txt", "txt")
 
 
 def get_analysis(profile, resume):
@@ -303,7 +304,7 @@ try:
             disabled=False, on_click=analyze, args=(profile, resume), key="analisys_"+resume['resume_id'])
 
         if 'analysis_'+resume['resume_id'] in st.session_state and st.session_state['analysis_'+resume['resume_id']] is not None:
-            print_analysis(st.session_state['analysis_'+resume['resume_id']])
+            print_analysis(st.session_state['analysis_'+resume['resume_id']],resume['id'],profile)
 
         # Reset button
         button_phold = col9.empty()
