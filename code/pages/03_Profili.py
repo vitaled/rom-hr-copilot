@@ -5,6 +5,7 @@
 # Prompt Lingua OK (split lingua)
 # Prompt Certificazioni OK
 
+import json
 import logging
 import streamlit as st
 import os
@@ -14,23 +15,40 @@ from utilities.AzureCosmosDBClient import AzureCosmosDBClient
 from utilities.SessionHelper import SessionHelper
 logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
 logger.setLevel(logging.WARNING)
-import json
+
+
+def to_save(profile_id, description):
+    st.session_state[description+'_updated'] = True
+
+
+def save(profile_id, description):
+    logger.info("test")
+    cosmos_client = AzureCosmosDBClient()
+    profile = list(cosmos_client.get_profile_by_id(profile_id))[0]
+    for index, prompt in enumerate(profile['prompts']):
+        if prompt['description'] == description:
+            print(prompt['text'])
+            profile['prompts'][index]['text'] = st.session_state[prompt['description']]
+            cosmos_client.update_profile(profile)
+    st.toast("Salvataggio completato")
+    st.session_state[description+'_updated'] = False
+
 
 def export_profiles():
     try:
         logger.info("Esportazione profili")
         cosmos_client = AzureCosmosDBClient()
         profiles = list(cosmos_client.get_profiles())
-        # return json in utf8 
-        return json.dumps(profiles,ensure_ascii=False).encode('utf8') 
-        
-        
-        #return json.dumps(profiles)
-        
+        # return json in utf8
+        return json.dumps(profiles, ensure_ascii=False).encode('utf8')
+
+        # return json.dumps(profiles)
+
     except Exception as e:
         error_string = traceback.format_exc()
         st.error(error_string)
         logger.error(error_string)
+
 
 def read_file(file: str):
     with open(os.path.join('prompts', file), 'r', encoding='utf-8') as file:
@@ -78,22 +96,25 @@ try:
         profile = list(cosmos_client.get_profile_by_id(profile))[0]
         st.session_state["current_profile"] = profile
         for prompt in profile['prompts']:
+            if prompt['description']+'_updated' not in st.session_state:
+                st.session_state[prompt['description']+'_updated'] = False
             with st.expander(prompt['description']):
-                #st.markdown(prompt['text'])
-                tab_text, tab_markdown = st.tabs(   
+                # st.markdown(prompt['text'])
+                tab_text, tab_markdown = st.tabs(
                     ["Testo Prompt", "Preview Markdown"])
                 with tab_text:
                     st.session_state[prompt['description']] = st.text_area(
-                        label=prompt['description'], value=prompt['text'], height=300)
+                        label=prompt['description'], value=prompt['text'], height=300, on_change=to_save, args=(profile['profile_id'], prompt['description']))
                 with tab_markdown:
                     st.markdown(st.session_state[prompt['description']])
+                save_button = st.button(label="Salva Prompt",
+                                        disabled=not st.session_state[prompt['description']+'_updated'],
+                                        on_click=save,
+                                        args=(profile['profile_id'], prompt['description']),
+                                        key=prompt['description']+'_save')
+        st.download_button(label="Esporta profili in formato JSON",
+                           data=export_profiles(), file_name="profiles.json")
 
-        st.button(label="Salvataggio Prompt",
-                  disabled=False, on_click=salvataggio)
-        
-
-        st.download_button(label="Esporta profili in formato JSON",data=export_profiles(),file_name="profiles.json")
-        
     else:
         st.warning("Non hai accesso a nessun profilo di selezione")
 
