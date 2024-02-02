@@ -195,6 +195,8 @@ def save_users():
 try:
     if "settings_changed" not in st.session_state:
         st.session_state["settings_changed"] = False
+    StreamlitHelper.setup_session_state()
+
     cosmos_client = AzureCosmosDBClient()
     st.set_page_config(layout="wide")
     StreamlitHelper.hide_footer()
@@ -209,7 +211,7 @@ try:
             st.session_state["token_response"] = st.slider(
                 "Tokens response length", 500, 1500, 1000)
             st.session_state["temperature"] = st.slider(
-                "Temperature", 0.0, 1.0, 0.7)
+                "Temperature", 0.0, 1.0, st.session_state["temperature"])  
             st.button("Controllo Deployment", on_click=check_deployment)
         with st.expander("Dati Supporto", expanded=False):
             st.markdown("### Dati Caricati")
