@@ -122,6 +122,13 @@ class AzureCosmosDBClient:
             query=query, enable_cross_partition_query=True)
         return items
 
+    def delete_analysis_by_profile(self, profile_id):
+        query = f"SELECT * FROM analyses a WHERE a.ProfileId = '{profile_id}'"
+        items = self.analyses.query_items(
+            query=query, enable_cross_partition_query=True)
+        for item in items:
+            self.analyses.delete_item(item['id'], item['id'])
+
     def delete_analysis_by_candidate_id_and_profile(self, candidate_id, profile_id):
         analysis = list(self.get_analysis_by_candidate_id_and_profile(
             candidate_id, profile_id))

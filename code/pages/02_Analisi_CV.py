@@ -20,6 +20,28 @@ logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
 
 
+def batch_deletion_all(profile):
+    cosmos_client = AzureCosmosDBClient()
+    try:
+        cosmos_client.delete_analysis_by_profile(profile)
+        st.success("Analisi cancellate")
+    except Exception as e:
+        st.error(traceback.format_exc())
+
+
+def batch_deletion(profile):
+    cosmos_client = AzureCosmosDBClient()
+    try:
+        for resume_id in st.session_state['selected_resumes']:
+            resume = list(
+                cosmos_client.get_candidates_by_resume_id(resume_id))[0]
+            print(resume)
+            reset(profile, resume, False)
+            st.success("Analisi cancellate")
+    except Exception as e:
+        st.error(traceback.format_exc())
+
+
 def batch_analysis(profile):
     arg_ids = ",".join(
         resume_id for resume_id in st.session_state['selected_resumes'])
@@ -52,7 +74,7 @@ def add_to_selection(resume_id):
         st.session_state['selected_resumes'].remove(resume_id)
 
 
-def reset(profile, resume):
+def reset(profile, resume, rerun=True):
     client = AzureCosmosDBClient()
     logger.info("Cancellazione analisi id " +
                 resume['id'] + " per il profilo "+profile)
@@ -61,10 +83,11 @@ def reset(profile, resume):
     client.delete_analysis_by_candidate_id_and_profile(resume['id'], profile)
     logger.info("Analisi cancellata dal database")
     st.toast("Analisi cancellata")
-    st.rerun()
+    if rerun:
+        st.rerun()
 
 
-def print_analysis(analysis,candidate_id,profile_id):
+def print_analysis(analysis, candidate_id, profile_id):
     text = ""
     for prompt in analysis:
         score = re.findall(r"Punteggio: (\d+)", prompt["output"])
@@ -79,8 +102,9 @@ def print_analysis(analysis,candidate_id,profile_id):
             st.markdown(prompt["output"])
         text = text + prompt["description"] + \
             " "+score+"\n"+prompt["output"]+"\n\n"
-    st.download_button("Scarica analisi", text, "analysis_"+candidate_id+"_"+profile_id+".txt", "txt",key="download_analysis_"+candidate_id+"_"+profile_id)
-    #st.download_button("Scarica analisi", text, "analysis.txt", "txt")
+    st.download_button("Scarica analisi", text, "analysis_"+candidate_id+"_" +
+                       profile_id+".txt", "txt", key="download_analysis_"+candidate_id+"_"+profile_id)
+    # st.download_button("Scarica analisi", text, "analysis.txt", "txt")
 
 
 def get_analysis(profile, resume):
@@ -155,6 +179,8 @@ def analyze(profile, resume):
 
             progress_bar.progress(30, text="Impostazione analisi prompts")
             for index, prompt in enumerate(prompts):
+                
+                #if prompt['description']+'_updated' not in st.session_state:
                 prompt_text = prompt["text"]
                 prompt_text = prompt_text.replace('{cv}', cv_text)
 
@@ -304,7 +330,8 @@ try:
             disabled=False, on_click=analyze, args=(profile, resume), key="analisys_"+resume['resume_id'])
 
         if 'analysis_'+resume['resume_id'] in st.session_state and st.session_state['analysis_'+resume['resume_id']] is not None:
-            print_analysis(st.session_state['analysis_'+resume['resume_id']],resume['id'],profile)
+            print_analysis(
+                st.session_state['analysis_'+resume['resume_id']], resume['id'], profile)
 
         # Reset button
         button_phold = col9.empty()
@@ -317,5 +344,9 @@ try:
             reset(profile, resume)
     st.button(label="Analizza selezionati",
               disabled=False if 'selected_resumes' in st.session_state and len(st.session_state['selected_resumes']) > 0 else True, on_click=batch_analysis, args=(profile,))
+    st.button(label="Cancella selezionati", disabled=False if 'selected_resumes' in st.session_state and len(
+        st.session_state['selected_resumes']) > 0 else True, on_click=batch_deletion, args=(profile, ))
+    st.button(label="Cancella tutte le analisi per il profilo corrente",
+              disabled=False, on_click=batch_deletion_all, args=(profile, ))
 except Exception as e:
     st.error(traceback.format_exc())

@@ -17,6 +17,19 @@ logger = logging.getLogger('azure.core.pipeline.policies.http_logging_policy')
 logger.setLevel(logging.WARNING)
 
 
+def import_profiles(file):
+    try:
+        logger.info("Importazione profili")
+        cosmos_client = AzureCosmosDBClient()
+        profiles = json.load(file)
+        for profile in profiles:
+            cosmos_client.update_profile(profile)
+        st.success("Importazione completata")
+    except Exception as e:
+        error_string = traceback.format_exc()
+        st.error(error_string)
+        logger.error(error_string)
+
 def to_save(profile_id, description):
     st.session_state[description+'_updated'] = True
 
@@ -112,9 +125,22 @@ try:
                                         on_click=save,
                                         args=(profile['profile_id'], prompt['description']),
                                         key=prompt['description']+'_save')
-        st.download_button(label="Esporta profili in formato JSON",
-                           data=export_profiles(), file_name="profiles.json")
-
+        
+        st.markdown("# Impostazioni")
+        with st.expander("Importazione/Esportazione Profili"):
+            st.markdown("Esporta i profili in formato JSON per condividerli con altri utenti o importarli in un altro momento")
+            st.download_button(label="Esporta profili in formato JSON",
+                            data=export_profiles(), file_name="profiles.json")
+            st.markdown("Importa profili in formato JSON")
+            profiles_import_data =  st.file_uploader(label="Carica file",type="json",accept_multiple_files=False)
+            
+            if profiles_import_data is not None:
+                if st.button("Carica profili"):
+                    try:
+                        import_profiles(profiles_import_data)
+                        st.success("Caricamento completato")
+                    except Exception as e:
+                        st.error(traceback.format_exc())
     else:
         st.warning("Non hai accesso a nessun profilo di selezione")
 

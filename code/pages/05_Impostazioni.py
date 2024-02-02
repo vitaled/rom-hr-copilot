@@ -35,14 +35,15 @@ def upload_candidates_data(uploaded_data):
         if len(candidates) == 1:
             # Create a new candidate
             candidate = candidates[0]
+            candidate['Nome'] = row[1]['Nome']
+            candidate['Cognome'] = row[1]['Cognome']
+            
             # for col in df.columns:
             #     candidate[col] = row[1][col]
-            #Candidatura 1:	Candidatura 2
+            # Candidatura 1:	Candidatura 2
             # e.g:
-            # FUNZIONARIO AMMINISTRATIVO – COD. FA13	
             # FUNZIONARIO AMMINISTRATIVO – COD. FA13
-
-            
+            # FUNZIONARIO AMMINISTRATIVO – COD. FA13
 
             if "candidature" not in candidate:
                 candidate["candidature"] = []
@@ -60,7 +61,6 @@ def upload_candidates_data(uploaded_data):
                 for col in df.columns:
                     candidacy[col] = row[1][col]
                 candidate[row[1]["Candidatura 2"]] = candidacy
-
 
             client.put_candidate(candidate)
             inserted_candidate += 1
@@ -82,24 +82,36 @@ def upload_evalations_data(uploaded_data):
     for row in df.iterrows():
         cf = row[1]['CodiceFiscale'].upper()
         candidates = list(cosmos_client.get_candidate_by_cf(cf))
-        candiate ={}
+        candiate = {}
         if candidates != []:
             candidate = candidates[0]
         else:
-            candidate['CodiceFiscale']=cf
-        
+            candidate['CodiceFiscale'] = cf
+
         candidate["Matricola"] = row[1]['Matricola']
         candidate["Valutazioni"] = {
-                'III2020':  row[1]['III2020'],
-                'IV2020': row[1]['IV2020'],
-                'I2021': row[1]['I2021'],
-                'II2021': row[1]['II2021'],
-                'I2022': row[1]['I2022'],
-                'II2022': row[1]['II2022'],
-                'I2023': row[1]['I2023']
-            }
+            'IV2017': row[1]['IV2017'],
+            'I2018': row[1]['I2018'],
+            'II2018': row[1]['II2018'],
+            'III2018': row[1]['III2018'],
+            'IV2018': row[1]['IV2018'],
+            'I2019': row[1]['I2019'],
+            'II2019': row[1]['II2019'],
+            'III2019': row[1]['III2019'],
+            'IV2019': row[1]['IV2019'],
+            'I2020': row[1]['I2020'],
+            'II2020': row[1]['II2020'],
+            'III2020':  row[1]['III2020'],
+            'IV2020': row[1]['IV2020'],
+            'I2021': row[1]['I2021'],
+            'II2021': row[1]['II2021'],
+            'I2022': row[1]['I2022'],
+            'II2022': row[1]['II2022'],
+            'I2023': row[1]['I2023']
+        }
         cosmos_client.put_candidate(candidate)
     st.success("Caricamento completato")
+
 
 def upload_seniority_data(uploaded_data):
     logging.info("Caricamento dati anzianità")
@@ -126,7 +138,8 @@ def upload_seniority_data(uploaded_data):
             candidate['Posizione Giuridica attuale'] = row[1]['Posizione Giuridica attuale']
             candidate['Qualifica'] = row[1]['Qualifica']
             candidate['NConcorso'] = row[1]['NConcorso']
-            candidate['Data assunzione'] = row[1]['Data assunzione'].strftime('%Y-%m-%d')
+            candidate['Data assunzione'] = row[1]['Data assunzione'].strftime(
+                '%Y-%m-%d')
             candidate['Cod Livello attuale'] = row[1]['Cod Livello attuale']
             candidate['Storia Rapporto Lavorativo'] = []
         else:
@@ -155,6 +168,7 @@ def check_deployment():
 
 def on_setting_change():
     st.session_state['settings_changed'] = True
+
 
 def save_users():
     try:
@@ -282,12 +296,13 @@ try:
                 except Exception as e:
                     st.error(traceback.format_exc())
                     st.error("Errore nell'eliminazione dei dati"+str(e))
-            
+
             if st.button("Elimina Logs"):
-                try: 
+                try:
                     cosmos_client.delete_analyses_runs()
                     cosmos_client.delete_upload_runs()
-                    st.success("Tutti i dati relativi ai run di caricamento e analisi sono stati eliminati")
+                    st.success(
+                        "Tutti i dati relativi ai run di caricamento e analisi sono stati eliminati")
                 except Exception as e:
                     st.error(traceback.format_exc())
                     st.error("Errore nell'eliminazione dei logs"+str(e))
