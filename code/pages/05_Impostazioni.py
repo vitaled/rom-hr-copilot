@@ -211,7 +211,7 @@ try:
             st.session_state["token_response"] = st.slider(
                 "Tokens response length", 500, 1500, 1000)
             st.session_state["temperature"] = st.slider(
-                "Temperature", 0.0, 1.0, st.session_state["temperature"])  
+                "Temperature", min_value=0.0, max_value=1.0, value=float(st.session_state["temperature"]))  
             st.button("Controllo Deployment", on_click=check_deployment)
         with st.expander("Dati Supporto", expanded=False):
             st.markdown("### Dati Caricati")
