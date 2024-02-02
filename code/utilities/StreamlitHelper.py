@@ -28,4 +28,4 @@ class StreamlitHelper:
         if not  st.session_state.get("token_response"):
             st.session_state["token_response"]= 1000
         if not st.session_state.get("temperature"):
-            st.session_state["temperature"] = 0.7
+            st.session_state["temperature"] = 1
