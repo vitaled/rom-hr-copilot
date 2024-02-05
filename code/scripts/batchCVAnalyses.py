@@ -6,6 +6,7 @@ print(os.path.join(base_path, 'utilities'))
 sys.path.insert(0, os.path.join(base_path))
 from utilities.AzureBlobStorageClient import AzureBlobStorageClient
 from utilities.AzureCosmosDBClient import AzureCosmosDBClient
+from utilities.AnalysisHelper import AnalysisHelper
 from utilities.AzureFormRecognizerClient import AzureFormRecognizerClient
 from utilities.LLMHelper import LLMHelper
 import logging
@@ -77,57 +78,69 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
             )
 
             for index, prompt in enumerate(prompts):
-                prompt_text = prompt["text"]
+                if prompt.get("type", "openai") == "openai":
+    
+                    prompt_text = prompt["text"]
 
-                prompt_text = prompt_text.replace('{cv}', cv_text)
+                    prompt_text = prompt_text.replace('{cv}', cv_text)
 
-                history_table = candidate['Storia Rapporto Lavorativo']
+                    history_table = candidate['Storia Rapporto Lavorativo']
 
-                history_table = pd.DataFrame(history_table)
-                history_table = history_table.to_markdown()
-                prompt_text = prompt_text.replace('{storia_professionale}',
-                                                  history_table)
-                evaluation_table = candidate['Valutazioni']
-                evaluation_table = pd.DataFrame(evaluation_table, index=[0])
+                    history_table = pd.DataFrame(history_table)
+                    history_table = history_table.to_markdown()
+                    prompt_text = prompt_text.replace('{storia_professionale}',
+                                                    history_table)
+                    evaluation_table = candidate['Valutazioni']
+                    evaluation_table = pd.DataFrame(evaluation_table, index=[0])
 
-                # Reset the index
-                evaluation_table = evaluation_table.reset_index()
-                # Use melt to pivot the DataFrame
-                evaluation_table = evaluation_table.melt(
-                    id_vars='index',
-                    var_name='Periodo',
-                    value_name='Valutazione')
-                # Drop the 'index' column as it's not needed
-                evaluation_table = evaluation_table.drop(columns='index')
+                    # Reset the index
+                    evaluation_table = evaluation_table.reset_index()
+                    # Use melt to pivot the DataFrame
+                    evaluation_table = evaluation_table.melt(
+                        id_vars='index',
+                        var_name='Periodo',
+                        value_name='Valutazione')
+                    # Drop the 'index' column as it's not needed
+                    evaluation_table = evaluation_table.drop(columns='index')
 
-                evaluation_table = evaluation_table.to_markdown()
+                    evaluation_table = evaluation_table.to_markdown()
 
-                prompt_text = prompt_text.replace('{risultati_valutazioni}', evaluation_table)
+                    prompt_text = prompt_text.replace('{risultati_valutazioni}', evaluation_table)
 
-                prompt_text = prompt_text.replace('{titolo_accesso}', candidate['access_title'])
-                prompt_text = prompt_text.replace('{dettagli_titolo_accesso}', candidate['access_title_info'])
-                prompt_text = prompt_text.replace('{altri_titoli}', candidate['other_titles'])
-                prompt_text = prompt_text.replace('{dettagli_altri_titoli}', candidate['other_title_info'])
+                    prompt_text = prompt_text.replace('{titolo_accesso}', candidate['access_title'])
+                    prompt_text = prompt_text.replace('{dettagli_titolo_accesso}', candidate['access_title_info'])
+                    prompt_text = prompt_text.replace('{altri_titoli}', candidate['other_titles'])
+                    prompt_text = prompt_text.replace('{dettagli_altri_titoli}', candidate['other_title_info'])
+                    
+                    logger.info(f"Computing prompt: "+prompt['description'])
+                    prompt['output'] = llm_helper.get_hr_completion(prompt_text)
+                    score = re.findall(r"Punteggio: (\d+)", prompt["output"])
+                   
+                elif prompt.get("type", "openai") == "python":
+                    helper_name = prompt.get("helper")
+                    helper_builder = AnalysisHelper.get_analysys_helper_builder(helper_name)
+                    helper = helper_builder.set_candidate(candidate).build()
+                    prompt['output']  = helper.get_results()
+                    score = re.findall(r"Punteggio: (\d+)", prompt["output"])
+                else:
+                    pass
                 
-                logger.info(f"Computing prompt: "+prompt['description'])
-                prompt['output'] = llm_helper.get_hr_completion(prompt_text)
-                score = re.findall(r"Punteggio: (\d+)", prompt["output"])
                 try:
-                    total_score += int(score[0])
+                        total_score += int(score[0])
                 except:
                     logger.warning("Score non calcolato for prompt: " +
-                                   prompt["description"] + " for profile: " + profile_id + " for resume: " + resume_id)
-
-                analysis = {
-                    "id": str(uuid.uuid4()),
-                    "AnalysisId": str(uuid.uuid4()),
-                    "CandidateId": candidate["id"],
-                    "ProfileId": profile_id,
-                    "Analysis": json.dumps(prompts),
-                    "Text": cv_text,
-                    "Score": total_score,
-                    "AnalysisRunId": analysis_id
-                }
+                                prompt["description"] + " for profile: " + profile_id + " for resume: " + resume_id)    
+            
+            analysis = {
+                "id": str(uuid.uuid4()),
+                "AnalysisId": str(uuid.uuid4()),
+                "CandidateId": candidate["id"],
+                "ProfileId": profile_id,
+                "Analysis": json.dumps(prompts),
+                "Text": cv_text,
+                "Score": total_score,
+                "AnalysisRunId": analysis_id
+            }
 
             cosmos_client.put_analysis(analysis)
             cosmos_client.set_analysis_run_completed(analysis_id)

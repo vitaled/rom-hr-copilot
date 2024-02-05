@@ -209,7 +209,7 @@ try:
         with st.expander("Impostazioni LLM", expanded=False):
             llm_helper = LLMHelper()
             st.session_state["token_response"] = st.slider(
-                "Tokens response length", 500, 1500, 1000)
+                "Tokens response length", 500, 4000, 2000)
             st.session_state["temperature"] = st.slider(
                 "Temperature", min_value=0.0, max_value=1.0, value=float(st.session_state["temperature"]))  
             st.button("Controllo Deployment", on_click=check_deployment)

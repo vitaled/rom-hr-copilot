@@ -24,4 +24,10 @@ container = database.get_container_client(container_name)  # Get a client for th
 
 # Insert the items into the container
 for item in items:
-    container.upsert_item(item)  # Insert each item into the container. If an item with the same id already exists, it will be replaced
+    #Check if the item already exists
+    item_id = item['id']
+    response = container.read_item(item_id, item_id)
+    if response:
+        print(f"Item with id {item_id} already exists. Skipping...")
+    else:
+        container.upsert_item(item)  # Insert each item into the container. If an item with the same id already exists, it will be replaced

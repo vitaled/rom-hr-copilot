@@ -66,19 +66,39 @@ class LLMHelper:
         self.max_tokens: int = int(
             os.getenv("OPENAI_MAX_TOKENS", -1)) if max_tokens is None else max_tokens
         self.document_loaders: BaseLoader = WebBaseLoader if document_loaders is None else document_loaders
-        self.llm: ChatOpenAI = ChatOpenAI(model_name=self.deployment_name, engine=self.deployment_name, temperature=self.temperature,
-                                          max_tokens=self.max_tokens, request_timeout=180, openai_api_key=openai.api_key) if llm is None else llm
+        print("Temperature:"+str(self.temperature))
+        #self.llm: ChatOpenAI = ChatOpenAI(model_name=self.deployment_name, engine=self.deployment_name, temperature=self.temperature,
+        #                                  max_tokens=self.max_tokens,top_p=0, request_timeout=180, openai_api_key=openai.api_key) if llm is None else llm
+        
+        
         self.pdf_parser: AzureFormRecognizerClient = AzureFormRecognizerClient(
         ) if pdf_parser is None else pdf_parser
         self.blob_client: AzureBlobStorageClient = AzureBlobStorageClient(
         ) if blob_client is None else blob_client
 
     def get_hr_completion(self, prompt: str):
-        messages = [
-            SystemMessage(content="Sei l'assistente digitale per il Recruitment del Comune di Roma. Aiuti nelle analisi di CV e a calcolare i punteggi per determinare la classifica dei candidati."),
-            HumanMessage(content=prompt)]
-        return self.llm(messages).content
-
+        # messages = [
+        #     SystemMessage(content=""),
+        #     HumanMessage(content=prompt)]
+        # return self.llm(messages).content
+        message_text = [
+           {"role":"system","content":"Sei l'assistente digitale per il Recruitment della Citta Metropolitana di Roma. Aiuti nelle analisi di CV e a calcolare i punteggi per determinare la classifica dei candidati."},
+           {"role":"user","content":prompt}
+        ]
+        completion = openai.ChatCompletion.create(
+                engine=self.deployment_name,
+                messages = message_text,
+                temperature=self.temperature,
+                top_p = 0,
+                max_tokens=self.max_tokens,
+                frequency_penalty=0,
+                presence_penalty=0,
+                stop=None,
+                seed=1234
+            )
+        content = completion.choices[0].message['content']
+        return content
+    
     def get_qa_completion(self, prompt: str):
         messages = [
             SystemMessage(content="Sei l'assistente digitale per il Recruitment del Comune di Roma. Ricevi domande su CV che ti vengono forniti e aiuti nell'estrazione di informazioni dal testo rispetto alle domande che ti vengono fatte."),

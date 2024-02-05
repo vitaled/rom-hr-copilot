@@ -4,6 +4,7 @@ import streamlit as st
 import re
 import sys
 import traceback
+from utilities.AnalysisHelper import AnalysisHelper
 from utilities.LLMHelper import LLMHelper
 from utilities.AzureFormRecognizerClient import AzureFormRecognizerClient
 import json
@@ -176,58 +177,67 @@ def analyze(profile, resume):
 
             llm_helper = LLMHelper(
                 temperature=st.session_state["temperature"], max_tokens=st.session_state["token_response"])
-
+            logger.info(st.session_state["temperature"])
             progress_bar.progress(30, text="Impostazione analisi prompts")
             for index, prompt in enumerate(prompts):
-                
-                #if prompt['description']+'_updated' not in st.session_state:
-                prompt_text = prompt["text"]
-                prompt_text = prompt_text.replace('{cv}', cv_text)
+                if prompt.get("type", "openai") == "openai":
+                    prompt_text = prompt["text"]
+                    prompt_text = prompt_text.replace('{cv}', cv_text)
 
-                history_table = candidate['Storia Rapporto Lavorativo']
+                    history_table = candidate['Storia Rapporto Lavorativo']
 
-                history_table = pd.DataFrame(history_table)
-                history_table = history_table.to_markdown()
-                prompt_text = prompt_text.replace(
-                    '{storia_professionale}', history_table)
-                evaluation_table = candidate['Valutazioni']
-                evaluation_table = pd.DataFrame(evaluation_table, index=[0])
+                    history_table = pd.DataFrame(history_table)
+                    history_table = history_table.to_markdown()
+                    prompt_text = prompt_text.replace(
+                        '{storia_professionale}', history_table)
+                    evaluation_table = candidate['Valutazioni']
+                    evaluation_table = pd.DataFrame(
+                        evaluation_table, index=[0])
 
-                # Reset the index
-                evaluation_table = evaluation_table.reset_index()
-                # Use melt to pivot the DataFrame
-                evaluation_table = evaluation_table.melt(
-                    id_vars='index', var_name='Periodo', value_name='Valutazione')
-                # Drop the 'index' column as it's not needed
-                evaluation_table = evaluation_table.drop(columns='index')
+                    # Reset the index
+                    evaluation_table = evaluation_table.reset_index()
+                    # Use melt to pivot the DataFrame
+                    evaluation_table = evaluation_table.melt(
+                        id_vars='index', var_name='Periodo', value_name='Valutazione')
+                    # Drop the 'index' column as it's not needed
+                    evaluation_table = evaluation_table.drop(columns='index')
 
-                evaluation_table = evaluation_table.to_markdown()
+                    evaluation_table = evaluation_table.to_markdown()
 
-                prompt_text = prompt_text.replace(
-                    '{risultati_valutazioni}', evaluation_table)
+                    prompt_text = prompt_text.replace(
+                        '{risultati_valutazioni}', evaluation_table)
 
-                prompt_text = prompt_text.replace(
-                    '{titolo_accesso}', candidate['access_title'])
+                    prompt_text = prompt_text.replace(
+                        '{titolo_accesso}', candidate['access_title'])
 
-                prompt_text = prompt_text.replace(
-                    '{dettagli_titolo_accesso}', candidate['access_title_info'])
+                    prompt_text = prompt_text.replace(
+                        '{dettagli_titolo_accesso}', candidate['access_title_info'])
 
-                prompt_text = prompt_text.replace(
-                    '{altri_titoli}', candidate['other_titles'])
-                prompt_text = prompt_text.replace(
-                    '{dettagli_altri_titoli}', candidate['other_title_info'])
+                    prompt_text = prompt_text.replace(
+                        '{altri_titoli}', candidate['other_titles'])
+                    prompt_text = prompt_text.replace(
+                        '{dettagli_altri_titoli}', candidate['other_title_info'])
 
-                prompt['output'] = llm_helper.get_hr_completion(prompt_text)
-                score = re.findall(r"Punteggio: (\d+)", prompt["output"])
+                    prompt['output'] = llm_helper.get_hr_completion(
+                        prompt_text)
+                    score = re.findall(r"Punteggio: (\d+)", prompt["output"])
+                    progress = int(30 + 70 * (index + 1) / len(prompts))
+                    progress_bar.progress(progress, text=f"Analisi " + prompt["description"])
+                elif prompt.get("type", "openai") == "python":
+                    helper_name = prompt.get("helper")
+                    helper_builder = AnalysisHelper.get_analysys_helper_builder(helper_name)
+                    helper = helper_builder.set_candidate(candidate).build()
+                    prompt['output']  = helper.get_results()
+                    score = re.findall(r"Punteggio: (\d+)", prompt["output"])
+                else:
+                    pass
 
                 try:
                     total_score = total_score + int(score[0])
                 except:
                     logger.error("Errore nel calcolo del punteggio")
-                progress = int(30 + 70 * (index + 1) / len(prompts))
-                progress_bar.progress(
-                    progress, text=f"Analisi " + prompt["description"])
-
+                    
+                    
             analysis = {
                 "id": str(uuid.uuid4()),
                 "AnalysisId": str(uuid.uuid4()),

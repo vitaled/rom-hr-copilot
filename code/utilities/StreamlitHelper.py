@@ -26,6 +26,6 @@ class StreamlitHelper:
     @staticmethod
     def setup_session_state():
         if not  st.session_state.get("token_response"):
-            st.session_state["token_response"]= 1000
+            st.session_state["token_response"]= 2000
         if not st.session_state.get("temperature"):
-            st.session_state["temperature"] = 1
+            st.session_state["temperature"] = 0

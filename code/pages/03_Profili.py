@@ -109,23 +109,28 @@ try:
         profile = list(cosmos_client.get_profile_by_id(profile))[0]
         st.session_state["current_profile"] = profile
         for prompt in profile['prompts']:
-            if prompt['description']+'_updated' not in st.session_state:
-                st.session_state[prompt['description']+'_updated'] = False
-            with st.expander(prompt['description']):
-                # st.markdown(prompt['text'])
-                tab_text, tab_markdown = st.tabs(
-                    ["Testo Prompt", "Preview Markdown"])
-                with tab_text:
-                    st.session_state[prompt['description']] = st.text_area(
-                        label=prompt['description'], value=prompt['text'], height=300, on_change=to_save, args=(profile['profile_id'], prompt['description']))
-                with tab_markdown:
-                    st.markdown(st.session_state[prompt['description']])
-                save_button = st.button(label="Salva Prompt",
-                                        disabled=not st.session_state[prompt['description']+'_updated'],
-                                        on_click=save,
-                                        args=(profile['profile_id'], prompt['description']),
-                                        key=prompt['description']+'_save')
-        
+            prompt_type = prompt.get('type','openai')
+            if prompt_type == 'openai':
+                if prompt['description']+'_updated' not in st.session_state:
+                    st.session_state[prompt['description']+'_updated'] = False
+                with st.expander(prompt['description']):
+                    # st.markdown(prompt['text'])
+                    tab_text, tab_markdown = st.tabs(
+                        ["Testo Prompt", "Preview Markdown"])
+                    with tab_text:
+                        st.session_state[prompt['description']] = st.text_area(
+                            label=prompt['description'], value=prompt['text'], height=300, on_change=to_save, args=(profile['profile_id'], prompt['description']))
+                    with tab_markdown:
+                        st.markdown(st.session_state[prompt['description']])
+                    save_button = st.button(label="Salva Prompt",
+                                            disabled=not st.session_state[prompt['description']+'_updated'],
+                                            on_click=save,
+                                            args=(profile['profile_id'], prompt['description']),
+                                            key=prompt['description']+'_save')
+            elif prompt_type == 'python':
+                with st.expander(prompt['description']):
+                    st.markdown(prompt['helper'])
+                    st.markdown("Questo prompt è di tipo python e non può essere modificato")
         st.markdown("# Impostazioni")
         with st.expander("Importazione/Esportazione Profili"):
             st.markdown("Esporta i profili in formato JSON per condividerli con altri utenti o importarli in un altro momento")
