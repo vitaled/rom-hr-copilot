@@ -83,7 +83,7 @@ def main():
     uploaded_cv = []
     uploaded_cv_path = []
     for file in os.listdir(args.folder):
-        if file.endswith(".pdf"):
+        if file.lower().endswith(".pdf"):
             uploaded_cv.append(file)
             uploaded_cv_path.append(os.path.join(args.folder, file))
 
