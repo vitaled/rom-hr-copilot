@@ -143,8 +143,8 @@ def analyze(profile, resume):
 
         if "Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:" in resume[profile]:        
             candidate['access_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
-        elif "Indicare l’Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell’assolvimento dell’obbligo scolastico è facoltativo)" in resume[profile]:
-            candidate['access_title_info'] = resume[profile]["Indicare l’Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell’assolvimento dell’obbligo scolastico è facoltativo)"]
+        elif "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell'assolvimento dell'obbligo scolastico è facoltativo)" in resume[profile]:
+            candidate['access_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell'assolvimento dell'obbligo scolastico è facoltativo)"]
             
         if "Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:" in resume[profile]:
             candidate['other_titles'] = resume[profile]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
@@ -153,8 +153,8 @@ def analyze(profile, resume):
         
         if "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1" in resume[profile]:  
             candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
-        elif "Indicare l’Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento" in resume[profile]:
-            candidate['other_title_info'] = resume[profile]["Indicare l’Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]       
+        elif "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento" in resume[profile]:
+            candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]       
 
         candidate['resume_id'] = resume['resume_id']
 
