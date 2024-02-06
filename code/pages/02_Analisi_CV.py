@@ -316,6 +316,7 @@ try:
         col.write(field_name)
 
     resumes_with_id = [resume for resume in resumes if 'resume_id' in resume]
+    
     for resume in resumes_with_id:
 
         analyses = cosmos_client.get_analysis_by_candidate_id_and_profile(

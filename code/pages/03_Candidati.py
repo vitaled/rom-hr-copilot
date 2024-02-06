@@ -33,9 +33,9 @@ try:
         if "candidature" in candidate:
             profile = candidate["candidature"][0]
             col1,col2,col3,col4,col5 = st.columns((1, 1, 1,1,1))
-            col1.write(candidate[profile]['Codice Fiscale'])
-            col2.write(candidate[profile]['Nome'])
-            col3.write(candidate[profile]['Cognome'])
+            col1.write(candidate['CodiceFiscale'])
+            col2.write(candidate['Nome'])
+            col3.write(candidate['Cognome'])
             col4.write("Sì" if 'resume_id' in candidate else "No")
             button_phold = col5.empty()  # create a placeholder
             col5.button("elimina",disabled=False, on_click=delete, args=(candidate['id'],), key="delete_"+candidate['id'])
