@@ -151,8 +151,11 @@ def analyze(profile, resume):
         elif "Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore" in resume[profile]:
             candidate['other_titles'] = resume[profile]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore"]
         
-        candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
-       
+        if "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1" in resume[profile]:  
+            candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+        elif "Indicare l’Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento" in resume[profile]:
+            candidate['other_title_info'] = resume[profile]["Indicare l’Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]       
+
         candidate['resume_id'] = resume['resume_id']
 
         cosmos_client = AzureCosmosDBClient()
