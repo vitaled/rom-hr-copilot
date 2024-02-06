@@ -138,10 +138,21 @@ def analyze(profile, resume):
         candidate['Cognome'] = resume[profile]['Cognome']
         candidate['Valutazioni'] = resume['Valutazioni']
         candidate['Storia Rapporto Lavorativo'] = resume['Storia Rapporto Lavorativo']
+
         candidate['access_title'] = resume[profile]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
-        candidate['access_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
-        candidate['other_titles'] = resume[profile]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
+
+        if "Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:" in resume[profile]:        
+            candidate['access_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
+        elif "Indicare l’Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell’assolvimento dell’obbligo scolastico è facoltativo)" in resume[profile]:
+            candidate['access_title_info'] = resume[profile]["Indicare l’Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell’assolvimento dell’obbligo scolastico è facoltativo)"]
+            
+        if "Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:" in resume[profile]:
+            candidate['other_titles'] = resume[profile]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
+        elif "Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore" in resume[profile]:
+            candidate['other_titles'] = resume[profile]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore"]
+        
         candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+       
         candidate['resume_id'] = resume['resume_id']
 
         cosmos_client = AzureCosmosDBClient()
