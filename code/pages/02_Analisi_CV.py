@@ -291,6 +291,13 @@ try:
 
     st.markdown("#### Seleziona candidato")
     resumes = cosmos_client.get_candidate_by_profile(profile)
+    # resumes_iterator = cosmos_client.get_candidate_by_profile(profile)
+    # resumes = []
+    
+    
+    # while resumes_iterator.has_more_results():
+    #     for resume in resumes_iterator:
+    #         resumes.append(resume)
 
     # # Show candidates table
     colms = st.columns((1, 1, 1, 1, 1, 1, 1, 1, 2))
