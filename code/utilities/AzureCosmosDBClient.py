@@ -120,6 +120,8 @@ class AzureCosmosDBClient:
         query = f"SELECT * FROM analyses a WHERE a.CandidateId = '{candidate_id}' AND a.ProfileId = '{profile_id}' OFFSET 0 LIMIT 1000"
         items = self.analyses.query_items(
             query=query, enable_cross_partition_query=True, max_item_count=1000)
+        
+        
         return items
 
     def delete_analysis_by_profile(self, profile_id):
@@ -192,7 +194,7 @@ class AzureCosmosDBClient:
         return items
 
     def get_candidate_by_profile(self, profile):
-        query = f"SELECT * FROM candidates c WHERE ARRAY_CONTAINS(c.candidature, '{profile}')"
+        query = f"SELECT * FROM candidates c WHERE ARRAY_CONTAINS(c.candidature, '{profile}' OFFSET 0 LIMIT 1000)"
         items = self.candidates.query_items(
             query=query, enable_cross_partition_query=True, max_item_count=1000)
         return items
