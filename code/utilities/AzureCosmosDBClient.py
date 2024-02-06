@@ -117,7 +117,7 @@ class AzureCosmosDBClient:
         return items
 
     def get_analysis_by_candidate_id_and_profile(self, candidate_id, profile_id):
-        query = f"SELECT * FROM analyses a WHERE a.CandidateId = '{candidate_id}' AND a.ProfileId = '{profile_id}' LIMIT 1000"
+        query = f"SELECT * FROM analyses a WHERE a.CandidateId = '{candidate_id}' AND a.ProfileId = '{profile_id}' OFFSET 0 LIMIT 1000"
         items = self.analyses.query_items(
             query=query, enable_cross_partition_query=True)
         return items
