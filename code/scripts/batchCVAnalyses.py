@@ -49,7 +49,7 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
         # candidate['access_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
         # candidate['other_titles'] = candidate_source[profile_id]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
         # candidate['other_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
-        candidate['access_title'] = resume[profile]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
+        candidate['access_title'] = candidate_source[profile_id]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
 
         if "Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:" in candidate_source[profile_id]:        
             candidate['access_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
