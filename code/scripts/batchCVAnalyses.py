@@ -45,10 +45,28 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
         candidate['Cognome'] = candidate_source[profile_id]['Cognome']
         candidate['Valutazioni'] = candidate_source['Valutazioni']
         candidate['Storia Rapporto Lavorativo'] = candidate_source['Storia Rapporto Lavorativo']
-        candidate['access_title'] = candidate_source[profile_id]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
-        candidate['access_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
-        candidate['other_titles'] = candidate_source[profile_id]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
-        candidate['other_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+        # candidate['access_title'] = candidate_source[profile_id]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
+        # candidate['access_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
+        # candidate['other_titles'] = candidate_source[profile_id]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
+        # candidate['other_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+        candidate['access_title'] = resume[profile]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
+
+        if "Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:" in candidate_source[profile_id]:        
+            candidate['access_title_info'] = candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
+        elif "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell'assolvimento dell'obbligo scolastico è facoltativo)" in candidate_source[profile_id]:
+            candidate['access_title_info'] =  candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell'assolvimento dell'obbligo scolastico è facoltativo)"]
+            
+        if "Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:" in candidate_source[profile_id]:
+            candidate['other_titles'] = candidate_source[profile_id]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
+        elif "Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore" in  candidate_source[profile_id]:
+            candidate['other_titles'] =  candidate_source[profile_id]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore"]
+        
+        if "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1" in  candidate_source[profile_id]:  
+            candidate['other_title_info'] =  candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+        elif "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento" in  candidate_source[profile_id]:
+            candidate['other_title_info'] =  candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]       
+
+        
         candidate['resume_id'] = candidate_source['resume_id']
 
 
