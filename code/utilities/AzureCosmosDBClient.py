@@ -194,7 +194,7 @@ class AzureCosmosDBClient:
         return items
 
     def get_candidate_by_profile(self, profile):
-        query = f"SELECT * FROM candidates c WHERE ARRAY_CONTAINS(c.candidature, '{profile}' OFFSET 0 LIMIT 1000)"
+        query = f"SELECT * FROM candidates c WHERE ARRAY_CONTAINS(c.candidature, '{profile}') OFFSET 0 LIMIT 1000"
         items = self.candidates.query_items(
             query=query, enable_cross_partition_query=True, max_item_count=1000)
         return items
