@@ -2,10 +2,25 @@
 import pandas as pd
 
 
+class DisciplinarySanctionsEvaluator:
+
+    def __init__(self, candidate, parameters):
+        self.is_sanctioned = candidate['sanctioned']
+
+    def _calculate(self):
+        if self.is_sanctioned:
+            return "Il candidato è stato sanzionato disciplinarmente quindi riceve una riduzione di 15 punti sul punteggio finale\n\nPunteggio: -15"
+        else:
+            return "Il candidato non è stato sanzionato disciplinarmente\n\nPunteggio: 0"
+    
+    def get_results(self):
+        return self._calculate()
+
 class EvaluationCalculator:
 
-    def __init__(self, candidate):
+    def __init__(self, candidate,parameters):
         self.evaluations = candidate['Valutazioni']
+        self.parameters = parameters
 
     def _create_text_explanation(self, evaluation_table, evaluation_table_normalized, year_averages, year_scores):
         fields = ['Periodo', 'Anno', 'Valutazione']
@@ -103,19 +118,25 @@ class EvaluationCalculator:
         year_scores = {}
 
         for key, value in year_averages.items():
-
-            if value >= 95 and value <= 100:
-                year_scores[key] = 6
-            elif value >= 91 and value <= 94.99:
-                year_scores[key] = 5.5
-            elif value >= 75 and value <= 90.99:
-                year_scores[key] = 5
-            elif value >= 50 and value <= 74.99:
-                year_scores[key] = 4
-            elif value >= 40 and value <= 49.99:
-                year_scores[key] = 3
-            else:
-                year_scores[key] = 0
+            year_scores[key] = 0
+            for evaluation_range in self.parameters['evaluation_table']:
+                if value >= evaluation_range['range_min'] and value <= evaluation_range['range_max']:
+                    year_scores[key] = evaluation_range['points']
+                    break
+            
+            
+            # if value >= 95 and value <= 100:
+            #     year_scores[key] = 6
+            # elif value >= 91 and value <= 94.99:
+            #     year_scores[key] = 5.5
+            # elif value >= 75 and value <= 90.99:
+            #     year_scores[key] = 5
+            # elif value >= 50 and value <= 74.99:
+            #     year_scores[key] = 4
+            # elif value >= 40 and value <= 49.99:
+            #     year_scores[key] = 3
+            # else:
+            #     year_scores[key] = 0
 
         # print(year_averages)
         # print(year_scores)
@@ -130,18 +151,39 @@ class EvaluationCalculator:
     def get_results(self):
         return self._calculate()
 
+class DisciplinarySanctionsEvaluatorBuilder:
+
+    def __init__(self):
+        self.candidate = None
+        self.parameters = None
+
+    def set_candidate(self, candidate):
+        self.candidate = candidate
+        return self
+    
+    def set_parameters(self, parameters):
+        self.parameters = parameters
+        return self
+
+    def build(self):
+        return DisciplinarySanctionsEvaluator(self.candidate,self.parameters)
 
 class EvaluationCalculatorBuilder:
 
     def __init__(self):
         self.candidate = None
+        self.parameters = None
 
     def set_candidate(self, candidate):
         self.candidate = candidate
         return self
+    
+    def set_parameters(self, parameters):
+        self.parameters = parameters
+        return self
 
     def build(self):
-        return EvaluationCalculator(self.candidate)
+        return EvaluationCalculator(self.candidate,self.parameters)
 
 
 class AnalysisHelper:
@@ -151,5 +193,7 @@ class AnalysisHelper:
 
         if helper_name == "EvaluationCalculator":
             return EvaluationCalculatorBuilder()
+        elif helper_name == "DisciplinaryCalculator":
+            return DisciplinarySanctionsEvaluatorBuilder()
         else:
             return None

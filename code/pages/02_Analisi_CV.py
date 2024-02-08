@@ -141,20 +141,26 @@ def analyze(profile, resume):
 
         candidate['access_title'] = resume[profile]["Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:"]
 
-        if "Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:" in resume[profile]:        
+        if "Dichiaro di essere in possesso del titolo di studio richiesto per l’ammissione alla selezione:" in resume[profile]:
             candidate['access_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
         elif "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell'assolvimento dell'obbligo scolastico è facoltativo)" in resume[profile]:
-            candidate['access_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell'assolvimento dell'obbligo scolastico è facoltativo)"]
-            
+            candidate['access_title_info'] = resume[profile][
+                "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento (il giudizio riportato in fase di conseguimento dell'assolvimento dell'obbligo scolastico è facoltativo)"]
+
         if "Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:" in resume[profile]:
             candidate['other_titles'] = resume[profile]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Funzionario/Elevata Qualificazione:"]
         elif "Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore" in resume[profile]:
             candidate['other_titles'] = resume[profile]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore"]
-        
-        if "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1" in resume[profile]:  
+
+        if "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1" in resume[profile]:
             candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
         elif "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento" in resume[profile]:
-            candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]       
+            candidate['other_title_info'] = resume[profile]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]
+
+        if "l'assenza di sanzioni disciplinari della sospensione dal servizio superiori a 10 giorni negli ultimi due anni, ai sensi del combinato disposto di cui all’art. 52, comma 1-bis, del d.lgs. 30 marzo 2001 n. 165, dell’art. 13 del C.C.N.L. Comparto Funzioni Locali personale non dirigente del 16.11.2022, triennio 2019/2021 e del Regolamento per le Progressioni tra le Aree del personale di ruolo non dirigente della Città metropolitana di Roma Capitale approvato con Decreto del Sindaco metropolitano n. 131 del 25.07.2023" in resume[profile]:
+            candidate['sanctioned'] = resume[profile]["l'assenza di sanzioni disciplinari della sospensione dal servizio superiori a 10 giorni negli ultimi due anni, ai sensi del combinato disposto di cui all’art. 52, comma 1-bis, del d.lgs. 30 marzo 2001 n. 165, dell’art. 13 del C.C.N.L. Comparto Funzioni Locali personale non dirigente del 16.11.2022, triennio 2019/2021 e del Regolamento per le Progressioni tra le Aree del personale di ruolo non dirigente della Città metropolitana di Roma Capitale approvato con Decreto del Sindaco metropolitano n. 131 del 25.07.2023"] == "NO"
+        else:
+            candidate['sanctioned'] = False
 
         candidate['resume_id'] = resume['resume_id']
 
@@ -236,12 +242,17 @@ def analyze(profile, resume):
                         prompt_text)
                     score = re.findall(r"Punteggio: (\d+)", prompt["output"])
                     progress = int(30 + 70 * (index + 1) / len(prompts))
-                    progress_bar.progress(progress, text=f"Analisi " + prompt["description"])
+                    progress_bar.progress(
+                        progress, text=f"Analisi " + prompt["description"])
                 elif prompt.get("type", "openai") == "python":
                     helper_name = prompt.get("helper")
-                    helper_builder = AnalysisHelper.get_analysys_helper_builder(helper_name)
-                    helper = helper_builder.set_candidate(candidate).build()
-                    prompt['output']  = helper.get_results()
+                    helper_builder = AnalysisHelper.get_analysys_helper_builder(
+                        helper_name)
+                    parameters = prompt.get("parameters", {})
+                    helper = helper_builder.set_candidate(
+                        candidate).set_parameters(parameters).build()
+
+                    prompt['output'] = helper.get_results()
                     score = re.findall(r"Punteggio: (\d+)", prompt["output"])
                 else:
                     pass
@@ -250,8 +261,7 @@ def analyze(profile, resume):
                     total_score = total_score + int(score[0])
                 except:
                     logger.error("Errore nel calcolo del punteggio")
-                    
-                    
+
             analysis = {
                 "id": str(uuid.uuid4()),
                 "AnalysisId": str(uuid.uuid4()),
@@ -293,8 +303,7 @@ try:
     resumes = cosmos_client.get_candidate_by_profile(profile)
     # resumes_iterator = cosmos_client.get_candidate_by_profile(profile)
     # resumes = []
-    
-    
+
     # while resumes_iterator.has_more_results():
     #     for resume in resumes_iterator:
     #         resumes.append(resume)
@@ -316,7 +325,7 @@ try:
         col.write(field_name)
 
     resumes_with_id = [resume for resume in resumes if 'resume_id' in resume]
-    
+
     for resume in resumes_with_id:
 
         analyses = cosmos_client.get_analysis_by_candidate_id_and_profile(
