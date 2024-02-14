@@ -62,7 +62,7 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
             candidate['other_titles'] =  candidate_source[profile_id]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore"]
         
         if "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1" in  candidate_source[profile_id]:  
-            candidate['other_title_info'] =  candidate_source[candidate_source]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+            candidate['other_title_info'] =  candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
         elif "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento" in  candidate_source[profile_id]:
             candidate['other_title_info'] =  candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]       
 
