@@ -62,9 +62,14 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
             candidate['other_titles'] =  candidate_source[profile_id]["Dichiaro di possedere titoli di studio ulteriori rispetto a quelli previsti per l’accesso all’Area di Istruttore"]
         
         if "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1" in  candidate_source[profile_id]:  
-            candidate['other_title_info'] =  candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
+            candidate['other_title_info'] =  candidate_source[candidate_source]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento.1"]
         elif "Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento" in  candidate_source[profile_id]:
             candidate['other_title_info'] =  candidate_source[profile_id]["Indicare l'Istituto che lo ha rilasciato, la votazione riportata e la data di conseguimento"]       
+
+        if "l'assenza di sanzioni disciplinari della sospensione dal servizio superiori a 10 giorni negli ultimi due anni, ai sensi del combinato disposto di cui all’art. 52, comma 1-bis, del d.lgs. 30 marzo 2001 n. 165, dell’art. 13 del C.C.N.L. Comparto Funzioni Locali personale non dirigente del 16.11.2022, triennio 2019/2021 e del Regolamento per le Progressioni tra le Aree del personale di ruolo non dirigente della Città metropolitana di Roma Capitale approvato con Decreto del Sindaco metropolitano n. 131 del 25.07.2023" in candidate_source[profile_id]:
+                candidate['sanctioned'] = candidate_source[profile_id]["l'assenza di sanzioni disciplinari della sospensione dal servizio superiori a 10 giorni negli ultimi due anni, ai sensi del combinato disposto di cui all’art. 52, comma 1-bis, del d.lgs. 30 marzo 2001 n. 165, dell’art. 13 del C.C.N.L. Comparto Funzioni Locali personale non dirigente del 16.11.2022, triennio 2019/2021 e del Regolamento per le Progressioni tra le Aree del personale di ruolo non dirigente della Città metropolitana di Roma Capitale approvato con Decreto del Sindaco metropolitano n. 131 del 25.07.2023"] == "NO"
+        else:
+            candidate['sanctioned'] = False
 
         
         candidate['resume_id'] = candidate_source['resume_id']
@@ -136,9 +141,13 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
                    
                 elif prompt.get("type", "openai") == "python":
                     helper_name = prompt.get("helper")
-                    helper_builder = AnalysisHelper.get_analysys_helper_builder(helper_name)
-                    helper = helper_builder.set_candidate(candidate).build()
-                    prompt['output']  = helper.get_results()
+                    helper_builder = AnalysisHelper.get_analysys_helper_builder(
+                        helper_name)
+                    parameters = prompt.get("parameters", {})
+                    helper = helper_builder.set_candidate(
+                        candidate).set_parameters(parameters).build()
+
+                    prompt['output'] = helper.get_results()
                     score = re.findall(r"Punteggio: (\d+)", prompt["output"])
                 else:
                     pass
@@ -165,7 +174,7 @@ def analyze(analysis_id, profile_id, resume_id, temperature, max_tokens):
     except Exception as e:
         error_string = traceback.format_exc()
         logger.error(error_string)
-        cosmos_client.set_analysis_run_failed(analysis_id, str(e))
+        cosmos_client.set_analysis_run_failed(analysis_id, str(error_string))
 
 
 def main():
